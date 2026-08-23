@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*')
+        && request.resource.size < 10 * 1024 * 1024;
+    }
+
+    // Listing images: public read, owner-scoped write
+    match /listingImages/{uid}/{listingId}/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && request.auth.uid == uid && isImage();
+      allow delete: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Profile avatars
+    match /avatars/{uid}/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && request.auth.uid == uid && isImage();
+      allow delete: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Verification documents: private — only the owner may upload,
+    // reads happen server-side (admin SDK bypasses rules)
+    match /verificationDocs/{uid}/{fileName} {
+      allow read: if false;
+      allow write: if isSignedIn()
+        && request.auth.uid == uid
+        && request.resource.size < 20 * 1024 * 1024;
+      allow delete: if false;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
