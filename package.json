@@ -1,0 +1,13 @@
+{
+  "name": "vennet",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vennet — identity, reputation, marketplace, and verification platform on Firebase",
+  "scripts": {
+    "dev": "npm --prefix web run dev",
+    "build": "npm --prefix functions run build && npm --prefix web run build",
+    "lint": "npm --prefix functions run lint && npm --prefix web run lint",
+    "emulators": "firebase emulators:start",
+    "deploy": "firebase deploy"
+  }
+}
