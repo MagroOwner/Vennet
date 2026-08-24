@@ -2,10 +2,39 @@
   "name": "vennet",
   "version": "0.1.0",
   "private": true,
-  "description": "Vennet — identity, reputation, marketplace, and verification platform on Firebase",
   "scripts": {
-    "dev": "npm --prefix web run dev",
-    "build": "npm --prefix web run build",
-    "lint": "npm --prefix web run lint"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:push": "drizzle-kit push"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.8.0",
+    "bcryptjs": "^3.0.3",
+    "drizzle-orm": "^0.45.2",
+    "next": "14.2.35",
+    "next-auth": "^4.24.15",
+    "postgres": "^3.4.9",
+    "react": "^18",
+    "react-dom": "^18",
+    "stripe": "^22.5.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "drizzle-kit": "^0.31.10",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.35",
+    "postcss": "^8",
+    "tsx": "^4.20.7",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
   }
 }
