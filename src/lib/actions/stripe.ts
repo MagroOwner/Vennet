@@ -1,8 +1,9 @@
 "use server";
 
+import Stripe from "stripe";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { failure } from "@/lib/action-error";
+import { ActionError, failure } from "@/lib/action-error";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { stripeAccounts, users } from "@/lib/db/schema";
@@ -11,48 +12,82 @@ import { getStripe } from "@/lib/stripe";
 import type { ActionResult } from "@/lib/types";
 
 function appUrl(): string {
-  return (
-    process.env.NEXTAUTH_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
-  );
+  const url = process.env.NEXTAUTH_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
+  if (!url || url.includes("localhost")) {
+    throw new ActionError("Seller payouts are not configured yet. Set NEXTAUTH_URL to your public Vennet URL.");
+  }
+  return url.replace(/\/$/, "");
+}
+
+function onboardingError(error: unknown): ActionError {
+  if (error instanceof Stripe.errors.StripeAuthenticationError) {
+    return new ActionError("Stripe could not authenticate. Check the STRIPE_SECRET_KEY in Vercel and redeploy.");
+  }
+  if (error instanceof Stripe.errors.StripePermissionError) {
+    return new ActionError("This Stripe key does not have permission to create connected accounts. Use your platform secret key.");
+  }
+  if (error instanceof Stripe.errors.StripeInvalidRequestError) {
+    return new ActionError("Stripe could not create the seller account. If you recently switched from test to live keys, try again to create a new connected account.");
+  }
+  return new ActionError("Stripe onboarding is temporarily unavailable. Please try again or contact support.");
+}
+
+async function createAccount(stripe: Stripe, email?: string | null): Promise<string> {
+  const account = await stripe.accounts.create({
+    type: "standard",
+    email: email ?? undefined,
+  });
+  return account.id;
 }
 
 /** Creates (or reuses) a Connect Standard account and returns an onboarding link. */
 export async function stripeOnboard(): Promise<ActionResult<{ url: string }>> {
   try {
-    const { userId } = await requireAuth();
-    const stripe = getStripe();
-
-    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-    const [existing] = await db
-      .select()
-      .from(stripeAccounts)
-      .where(eq(stripeAccounts.userId, userId))
-      .limit(1);
-
-    let accountId = existing?.stripeAccountId;
-    if (!accountId) {
-      const account = await stripe.accounts.create({
-        type: "standard",
-        email: user?.email,
-        metadata: { userId },
-      });
-      accountId = account.id;
-      await db
-        .insert(stripeAccounts)
-        .values({ userId, stripeAccountId: accountId })
-        .onConflictDoUpdate({
-          target: stripeAccounts.userId,
-          set: { stripeAccountId: accountId, updatedAt: new Date() },
-        });
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new ActionError("Seller payouts are not configured yet. Add STRIPE_SECRET_KEY in Vercel Production settings.");
     }
 
-    const link = await stripe.accountLinks.create({
-      account: accountId,
-      refresh_url: `${appUrl()}/stripe/onboarding?refresh=1`,
-      return_url: `${appUrl()}/dashboard/seller`,
-      type: "account_onboarding",
-    });
+    const { userId } = await requireAuth();
+    const stripe = getStripe();
+    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const [existing] = await db.select().from(stripeAccounts).where(eq(stripeAccounts.userId, userId)).limit(1);
+
+    let accountId = existing?.stripeAccountId;
+    if (accountId) {
+      try {
+        await stripe.accounts.retrieve(accountId);
+      } catch (error) {
+        if (error instanceof Stripe.errors.StripeInvalidRequestError) {
+          accountId = undefined;
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    if (!accountId) {
+      try {
+        accountId = await createAccount(stripe, user?.email);
+      } catch (error) {
+        throw onboardingError(error);
+      }
+      await db.insert(stripeAccounts).values({ userId, stripeAccountId: accountId }).onConflictDoUpdate({
+        target: stripeAccounts.userId,
+        set: { stripeAccountId: accountId, onboardingComplete: false, chargesEnabled: false, payoutsEnabled: false, updatedAt: new Date() },
+      });
+    }
+
+    let link: Stripe.AccountLink;
+    try {
+      link = await stripe.accountLinks.create({
+        account: accountId,
+        refresh_url: `${appUrl()}/stripe/onboarding?refresh=1`,
+        return_url: `${appUrl()}/dashboard/seller`,
+        type: "account_onboarding",
+      });
+    } catch (error) {
+      throw onboardingError(error);
+    }
 
     await logActivity(userId, "stripe_onboarded", { accountId });
     return { ok: true, url: link.url };
@@ -61,14 +96,10 @@ export async function stripeOnboard(): Promise<ActionResult<{ url: string }>> {
   }
 }
 
-const intentSchema = z.object({
-  paymentIntentId: z.string().min(1),
-});
+const intentSchema = z.object({ paymentIntentId: z.string().min(1) });
 
 /** Confirms a PaymentIntent status for the buyer after checkout. */
-export async function refreshPaymentIntentStatus(
-  input: z.input<typeof intentSchema>
-): Promise<ActionResult<{ status: string }>> {
+export async function refreshPaymentIntentStatus(input: z.input<typeof intentSchema>): Promise<ActionResult<{ status: string }>> {
   try {
     await requireAuth();
     const { paymentIntentId } = intentSchema.parse(input);
