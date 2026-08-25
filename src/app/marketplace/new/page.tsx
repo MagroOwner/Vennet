@@ -24,5 +24,5 @@ export default async function NewListingPage() {
     );
   }
 
-  return <div className="mx-auto max-w-xl"><h1 className="text-3xl font-bold">Create a listing</h1><p className="mt-2 text-slate-400">Add a digital product, service, or subscription for sale.</p><NewListingForm /></div>;
+  return <div className="mx-auto max-w-xl"><h1 className="text-3xl font-bold">Create a listing</h1><p className="mt-2 text-slate-400">Add a digital product, service, or subscription for sale.</p><NewListingForm isPro={identity.isPro} /></div>;
 }
