@@ -33,14 +33,10 @@ function onboardingError(error: unknown): ActionError {
 }
 
 async function createAccount(stripe: Stripe, email?: string | null): Promise<string> {
-  const account = await stripe.accounts.create({
-    type: "standard",
-    email: email ?? undefined,
-  });
+  const account = await stripe.accounts.create({ type: "standard", email: email ?? undefined });
   return account.id;
 }
 
-/** Creates (or reuses) a Connect Standard account and returns an onboarding link. */
 export async function stripeOnboard(): Promise<ActionResult<{ url: string }>> {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
@@ -52,16 +48,13 @@ export async function stripeOnboard(): Promise<ActionResult<{ url: string }>> {
     const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
     const [existing] = await db.select().from(stripeAccounts).where(eq(stripeAccounts.userId, userId)).limit(1);
 
-    let accountId = existing?.stripeAccountId;
+    let accountId: string | undefined = existing?.stripeAccountId;
     if (accountId) {
       try {
         await stripe.accounts.retrieve(accountId);
       } catch (error) {
-        if (error instanceof Stripe.errors.StripeInvalidRequestError) {
-          accountId = undefined;
-        } else {
-          throw error;
-        }
+        if (error instanceof Stripe.errors.StripeInvalidRequestError) accountId = undefined;
+        else throw error;
       }
     }
 
@@ -98,7 +91,6 @@ export async function stripeOnboard(): Promise<ActionResult<{ url: string }>> {
 
 const intentSchema = z.object({ paymentIntentId: z.string().min(1) });
 
-/** Confirms a PaymentIntent status for the buyer after checkout. */
 export async function refreshPaymentIntentStatus(input: z.input<typeof intentSchema>): Promise<ActionResult<{ status: string }>> {
   try {
     await requireAuth();
