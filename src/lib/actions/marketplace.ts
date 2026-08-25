@@ -1,9 +1,9 @@
 "use server";
 
 import { eq } from "drizzle-orm";
+import { ActionError, failure } from "@/lib/action-error";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { ActionError, failure } from "@/lib/action-error";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { identities, listings, stripeAccounts, transactions } from "@/lib/db/schema";
@@ -11,6 +11,12 @@ import { countRecentActivity, logActivity } from "@/lib/services/activity";
 import { raiseFraudSignal } from "@/lib/services/fraud";
 import { getStripe, PLATFORM_FEE_BPS } from "@/lib/stripe";
 import { LISTING_CATEGORIES, type ActionResult } from "@/lib/types";
+
+function appUrl(): string {
+  const url = process.env.NEXTAUTH_URL ?? (process.env.VERCEL_URL ? "https://" + process.env.VERCEL_URL : undefined);
+  if (!url || url.includes("localhost")) throw new ActionError("Checkout is not configured yet. Set NEXTAUTH_URL to Vennet's public URL.");
+  return url.replace(/\/$/, "");
+}
 
 const createListingSchema = z.object({
   title: z.string().trim().min(3, "Title must be 3-120 characters.").max(120),
@@ -109,7 +115,7 @@ const purchaseSchema = z.object({ listingId: z.string().uuid("listingId is requi
 
 export async function purchaseListing(
   input: z.input<typeof purchaseSchema>
-): Promise<ActionResult<{ transactionId: string; clientSecret: string | null }>> {
+): Promise<ActionResult<{ transactionId: string; url: string }>> {
   try {
     const { userId } = await requireAuth();
     const { listingId } = purchaseSchema.parse(input);
@@ -173,29 +179,30 @@ export async function purchaseListing(
       })
       .returning({ id: transactions.id });
 
-    const paymentIntent = await getStripe().paymentIntents.create({
-      amount: listing.priceCents,
-      currency: listing.currency,
-      application_fee_amount: platformFeeCents,
-      transfer_data: { destination: sellerAccount.stripeAccountId },
+    const checkout = await getStripe().checkout.sessions.create({
+      mode: "payment",
+      line_items: [{
+        quantity: 1,
+        price_data: {
+          currency: listing.currency,
+          unit_amount: listing.priceCents,
+          product_data: { name: listing.title, description: listing.description.slice(0, 500) },
+        },
+      }],
+      payment_intent_data: {
+        application_fee_amount: platformFeeCents,
+        transfer_data: { destination: sellerAccount.stripeAccountId },
+        metadata: { transactionId: transaction.id, listingId, buyerId: userId },
+      },
+      client_reference_id: userId,
       metadata: { transactionId: transaction.id, listingId, buyerId: userId },
+      success_url: appUrl() + "/inventory?purchase=success",
+      cancel_url: appUrl() + "/marketplace/" + listingId + "?purchase=cancelled",
     });
+    if (!checkout.url) throw new ActionError("Stripe could not start checkout. Please try again.");
 
-    await db
-      .update(transactions)
-      .set({ stripePaymentIntentId: paymentIntent.id, updatedAt: new Date() })
-      .where(eq(transactions.id, transaction.id));
-
-    await logActivity(userId, "listing_purchased", {
-      listingId,
-      transactionId: transaction.id,
-    });
-
-    return {
-      ok: true,
-      transactionId: transaction.id,
-      clientSecret: paymentIntent.client_secret,
-    };
+    await logActivity(userId, "listing_purchased", { listingId, transactionId: transaction.id });
+    return { ok: true, transactionId: transaction.id, url: checkout.url };
   } catch (error) {
     return failure(error);
   }
