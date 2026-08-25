@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Terms of Service for the Vennet digital marketplace.",
 };
 
-const sections = [
+const sections: Array<[string, string[]]> = [
   ["1. Definitions", [
     "“Account” means a registered Vennet user account. “Buyer” means a user who purchases an Offer. “Seller” means a user who lists or sells an Offer. “Offer” means a digital-only product, service, membership, subscription, download, file, template, software license, or other non-physical offering listed on Vennet.",
     "“Vennet,” “we,” “us,” and “our” mean [Legal Company Name], a [Michigan entity type], with its principal business address at [Business Address]. “Services” means Vennet’s website, marketplace, creator tools, payment features, verification tools, and related software. “Stripe Account” means a Stripe or Stripe Connect account used to receive payouts. “Terms” means these Terms of Service and the policies incorporated by reference.",
