@@ -46,6 +46,15 @@ export async function createListing(
       throw new ActionError("Create a Vennet identity before selling.");
     }
 
+    const [stripeAccount] = await db
+      .select({ chargesEnabled: stripeAccounts.chargesEnabled, payoutsEnabled: stripeAccounts.payoutsEnabled })
+      .from(stripeAccounts)
+      .where(eq(stripeAccounts.userId, userId))
+      .limit(1);
+    if (!stripeAccount?.chargesEnabled || !stripeAccount.payoutsEnabled) {
+      throw new ActionError("Connect and complete Stripe onboarding before creating a listing.");
+    }
+
     // Fraud check: rapid listing creation.
     const recentListings = await countRecentActivity(userId, "listing_created", 10);
     if (recentListings >= 5) {
