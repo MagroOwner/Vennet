@@ -13,7 +13,7 @@ body {
     radial-gradient(900px 480px at 8% -10%, rgb(16 185 129 / 0.18), transparent 65%),
     radial-gradient(720px 520px at 92% 4%, rgb(99 102 241 / 0.16), transparent 62%),
     #0b1020;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   letter-spacing: -0.012em;
 }
 ::selection { background: #5eead4; color: #07111c; }
@@ -31,7 +31,7 @@ body {
 }
 
 @layer components {
-  .console-page { @apply space-y-7; }
+  .console-page { @apply space-y-7; }\n  .pro-glow { @apply pointer-events-none absolute rounded-full blur-3xl; }\n  .pro-glow-left { @apply -left-40 top-1/3 h-[30rem] w-[30rem] bg-emerald-500/15; }\n  .pro-glow-right { @apply -right-32 -top-28 h-[28rem] w-[28rem] bg-lime-300/10; }\n  .pro-grid { @apply pointer-events-none absolute inset-0 opacity-30; background-image: linear-gradient(rgb(163 230 53 / 0.07) 1px, transparent 1px), linear-gradient(90deg, rgb(163 230 53 / 0.07) 1px, transparent 1px); background-size: 42px 42px; mask-image: linear-gradient(to bottom, black, transparent 82%); }
   .console-panel { @apply rounded-2xl border bg-slate-950/55 shadow-[0_18px_55px_rgb(0_0_0/0.18)] backdrop-blur-sm; }
   .console-panel-header { @apply flex items-center justify-between border-b px-6 py-5; }
   .console-kicker { @apply text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-400; }
