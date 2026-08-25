@@ -2,26 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+:root { --background: #08090b; --foreground: #f4f4f5; }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+* { border-color: #27272a; }
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: -0.01em;
 }
+::selection { background: #00e87a; color: #07110b; }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+@layer components {
+  .console-page { @apply space-y-6; }
+  .console-panel { @apply rounded-xl border border-zinc-800 bg-[#111318] shadow-sm; }
+  .console-panel-header { @apply flex items-center justify-between border-b border-zinc-800 px-5 py-4; }
+  .console-kicker { @apply font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500; }
+  .console-link { @apply font-mono text-[11px] font-bold uppercase tracking-tight text-emerald-400 hover:text-emerald-300 hover:underline; }
+  .console-status { @apply inline-flex items-center gap-1 rounded border border-emerald-700/70 bg-emerald-950/40 px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-400; }
+  .console-row { @apply flex items-center justify-between gap-4 rounded-lg border border-zinc-800 bg-[#090b0e] px-4 py-3; }
 }
