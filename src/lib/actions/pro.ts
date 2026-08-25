@@ -19,10 +19,19 @@ export async function startProCheckout(): Promise<ActionResult<{ url: string }>>
     const priceId = process.env.STRIPE_PRO_PRICE_ID;
     if (!priceId) throw new ActionError("Vennet Pro checkout is not configured yet. Please contact support.");
     const { userId } = await requireAuth();
-    const [identity] = await db.select({ userId: identities.userId, isPro: identities.isPro }).from(identities).where(eq(identities.userId, userId)).limit(1);
+    const [identity] = await db.select({ userId: identities.userId }).from(identities).where(eq(identities.userId, userId)).limit(1);
     if (!identity) throw new ActionError("Create your identity before upgrading to Vennet Pro.");
-    if (identity.isPro) throw new ActionError("Your Vennet Pro membership is already active.");
     const [user] = await db.select({ email: users.email }).from(users).where(eq(users.id, userId)).limit(1);
+    if (!user?.email) throw new ActionError("A verified account email is required for Vennet Pro.");
+    const customers = await getStripe().customers.list({ email: user.email, limit: 10 });
+    for (const customer of customers.data) {
+      const subscriptions = await getStripe().subscriptions.list({ customer: customer.id, status: "all", limit: 100 });
+      const hasActivePro = subscriptions.data.some((subscription) =>
+        ["active", "trialing", "past_due"].includes(subscription.status) &&
+        subscription.items.data.some((item) => item.price.id === priceId)
+      );
+      if (hasActivePro) throw new ActionError("Your Vennet Pro subscription is already active. Please manage it in Stripe.");
+    }
     const checkout = await getStripe().checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
