@@ -20,6 +20,10 @@ async function setPro(userId: string, isPro: boolean): Promise<void> {
   });
 }
 
+async function setIdentityVerification(userId: string, verificationStatus: "verified" | "rejected"): Promise<void> {
+  await db.update(identities).set({ verificationStatus, updatedAt: new Date() }).where(eq(identities.userId, userId));
+}
+
 async function userIdForSubscription(subscriptionId: string): Promise<string | undefined> {
   const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
   return subscription.metadata.vennetUserId || undefined;
@@ -28,6 +32,10 @@ async function userIdForSubscription(subscriptionId: string): Promise<string | u
 function invoiceSubscriptionId(invoice: Stripe.Invoice): string | undefined {
   const value = invoice as unknown as { subscription?: string; parent?: { subscription_details?: { subscription?: string } } };
   return value.subscription ?? value.parent?.subscription_details?.subscription;
+}
+
+function verificationUserId(session: Stripe.Identity.VerificationSession): string | undefined {
+  return session.client_reference_id ?? session.metadata.vennetUserId ?? undefined;
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -68,6 +76,16 @@ export async function POST(request: Request): Promise<NextResponse> {
           onboardingComplete: account.details_submitted ?? false,
           updatedAt: new Date(),
         }).where(eq(stripeAccounts.stripeAccountId, account.id));
+        break;
+      }
+      case "identity.verification_session.verified": {
+        const userId = verificationUserId(event.data.object);
+        if (userId) await setIdentityVerification(userId, "verified");
+        break;
+      }
+      case "identity.verification_session.requires_input": {
+        const userId = verificationUserId(event.data.object);
+        if (userId) await setIdentityVerification(userId, "rejected");
         break;
       }
       case "checkout.session.completed": {
