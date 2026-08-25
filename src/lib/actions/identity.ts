@@ -6,7 +6,7 @@ import { z } from "zod";
 import { ActionError, failure } from "@/lib/action-error";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { identities, reputationScores, users } from "@/lib/db/schema";
+import { identities, reputationScores } from "@/lib/db/schema";
 import { logActivity } from "@/lib/services/activity";
 import { BASE_SCORE } from "@/lib/services/reputation";
 import type { ActionResult } from "@/lib/types";
