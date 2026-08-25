@@ -118,6 +118,7 @@ export const users = pgTable(
     passwordHash: text("password_hash"),
     displayName: text("display_name").notNull().default(""),
     image: text("image"),
+    emailVerified: timestamp("email_verified", { withTimezone: true }),
     isPro: boolean("is_pro").notNull().default(false),
     disabled: boolean("disabled").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -125,6 +126,22 @@ export const users = pgTable(
   },
   (table) => ({
     emailIdx: uniqueIndex("users_email_idx").on(table.email),
+  })
+);
+
+export const emailVerificationTokens = pgTable(
+  "email_verification_tokens",
+  {
+    email: text("email").primaryKey(),
+    passwordHash: text("password_hash").notNull(),
+    displayName: text("display_name").notNull().default(""),
+    codeHash: text("code_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    expiresIdx: index("email_verification_tokens_expires_idx").on(table.expiresAt),
   })
 );
 
