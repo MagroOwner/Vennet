@@ -81,7 +81,6 @@ const sections: Array<[string, string[]]> = [
     "We may update these Terms by posting a revised version and updating the effective date. Continued use after the effective date means acceptance to the extent permitted by law.",
     "For Account, marketplace, refund, or policy questions, contact Vennet at vennetofficial@gmail.com. For Stripe Account, payout, or payment-processor questions, contact Stripe through the Stripe Dashboard or Stripe Support.",
   ]],
-],
 
   ["17. Buyer responsibilities and no-reselling", [
     "Buyers receive only the rights expressly stated in the applicable Offer and any stated license. Unless the Seller gives prior written permission, a Buyer may not resell, redistribute, repackage, sublicense, transfer, publicly post, publish, share, reproduce beyond permitted personal use, or make available to another person any Digital Offer purchased through Vennet.",
