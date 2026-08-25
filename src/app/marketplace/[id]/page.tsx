@@ -73,11 +73,15 @@ export default async function ListingPage({ params }: { params: { id: string } }
           </Link>
         )}
 
-        <BuyButton
-          listingId={listing.id}
-          available={listing.status === "active" && !isOwnListing}
-          signedIn={Boolean(session?.user?.id)}
-        />
+        {isOwnListing ? (
+          <Link href={"/marketplace/" + listing.id + "/edit"} className="button-primary mt-6">Edit this listing</Link>
+        ) : (
+          <BuyButton
+            listingId={listing.id}
+            available={listing.status === "active"}
+            signedIn={Boolean(session?.user?.id)}
+          />
+        )}
       </div>
     </div>
   );
