@@ -81,6 +81,42 @@ const sections: Array<[string, string[]]> = [
     "We may update these Terms by posting a revised version and updating the effective date. Continued use after the effective date means acceptance to the extent permitted by law.",
     "For Account, marketplace, refund, or policy questions, contact Vennet at vennetofficial@gmail.com. For Stripe Account, payout, or payment-processor questions, contact Stripe through the Stripe Dashboard or Stripe Support.",
   ]],
+],
+
+  ["17. Buyer responsibilities and no-reselling", [
+    "Buyers receive only the rights expressly stated in the applicable Offer and any stated license. Unless the Seller gives prior written permission, a Buyer may not resell, redistribute, repackage, sublicense, transfer, publicly post, publish, share, reproduce beyond permitted personal use, or make available to another person any Digital Offer purchased through Vennet.",
+    "Buyers may not reverse engineer, decompile, disassemble, modify, extract, scrape, use unauthorized automation with, or create derivative works from a Digital Offer except where applicable law makes a restriction unenforceable. Buyers may not use a purchased Digital Offer for unlawful, deceptive, infringing, abusive, or harmful purposes.",
+    "Buyers must communicate with Sellers respectfully and may not harass, threaten, abuse, dox, defame, coerce, extort, or otherwise mistreat Sellers. Buyers may not misuse Vennet’s dispute, refund, review, or chargeback processes to obtain a Digital Offer without paying for it or to pressure a Seller into providing value beyond the stated Offer.",
+  ]],
+  ["18. Seller digital delivery and support requirements", [
+    "Sellers must deliver each Digital Offer within the time stated in the listing, or, if no time is stated, within a commercially reasonable time. Sellers must use a delivery method reasonably suited to the Offer and must retain reasonable proof of delivery, access, completion, or availability when applicable.",
+    "Sellers must provide valid, accurate, and non-misleading license terms. A Seller may not sell a license it does not own or have authority to grant, imply that a license is exclusive when it is not, or represent that a Buyer receives rights that the Seller cannot legally provide.",
+    "Seller support is required. Sellers must provide reasonable, timely support for access issues, delivery issues, license issues, and material defects in a Digital Offer. Sellers must provide support through the contact method and duration disclosed in the listing, or, if none is disclosed, through a reasonable support channel for a reasonable period after delivery.",
+    "Sellers must not provide fake, AI-generated, or misleading deliverables, including content represented as original, human-created, custom, licensed, verified, complete, or functional when it is not. Sellers are responsible for clearly disclosing all material use of artificial intelligence, third-party assets, limitations, dependencies, and delivery conditions.",
+  ]],
+  ["19. Marketplace listing rules", [
+    "Each listing must clearly and accurately disclose the Digital Offer’s nature, included files or services, format, compatibility, material technical requirements, delivery method, delivery timing, price, applicable license, use restrictions, support method, support duration, and any material limitations. A Seller must promptly update a listing if a disclosure becomes inaccurate.",
+    "Listings may not offer physical goods, unlawful goods or services, stolen or infringing material, deceptive or misleading content, unlicensed accounts or credentials, malware, exploits, spam, fraudulent services, adult content where prohibited, regulated financial products, or any item prohibited by law, Stripe, card-network rules, or Vennet policy.",
+    "Listing images, samples, descriptions, reviews, claims, availability statements, and performance claims must be accurate and substantiated. Sellers may not conceal a material limitation, use bait-and-switch tactics, or describe a Digital Offer in a way likely to mislead a reasonable Buyer.",
+  ]],
+  ["20. Seller verification", [
+    "Vennet may require a Seller to complete identity verification, business verification, tax verification, Stripe verification, proof of ownership or licensing of Digital Offers, proof of delivery, or other information we reasonably request to prevent fraud, comply with Stripe requirements, comply with law, or protect Users.",
+    "A Seller must provide complete, current, and truthful verification information. We may suspend, restrict, withhold access to, remove listings from, or terminate a Seller Account that fails, refuses, or is unable to complete verification, or where submitted information is inconsistent, inaccurate, suspicious, or unsupported.",
+  ]],
+  ["21. Data retention and security practices", [
+    "Vennet may retain Account, identity, verification, transaction, payout, dispute, communications, device, security, fraud, and activity information for fraud prevention, Stripe compliance, legal and tax obligations, security, dispute resolution, enforcement of these Terms, audit, and legitimate business-record purposes.",
+    "After Account deletion, we may retain information that is reasonably necessary for those purposes, including transaction records, payout records, dispute records, verification records, fraud and security records, support communications, and records required by law or Stripe. We will handle retained information as described in our Privacy Policy and applicable law.",
+    "Vennet does not intentionally store full payment-card numbers on its servers. Payment-card information is processed by Stripe or another Payment Processor using its payment infrastructure and tokenization tools. No security system is perfect, and we do not guarantee that the Services will be free from unauthorized access, interruption, or loss.",
+  ]],
+  ["22. Platform modifications, downtime, and fee changes", [
+    "Vennet may modify, add, remove, suspend, or discontinue any feature, listing category, policy, payment method, verification process, or part of the Services at any time. We do not guarantee uptime, uninterrupted access, error-free operation, or continued availability of any feature.",
+    "To the maximum extent permitted by law, Vennet is not liable for downtime, maintenance, service interruptions, outages, data delays, failed transmissions, Stripe or bank interruptions, or modifications to the Services. Users should maintain their own appropriate backups of Content and business records.",
+    "Vennet may change its platform fees by providing notice through the Services, by email, or by another reasonable method. A fee change applies only to transactions initiated after the effective date disclosed in the notice. It does not retroactively change the platform fee for a completed transaction.",
+  ]],
+  ["23. No API, automation, or unauthorized access", [
+    "Vennet does not offer a public API. You may not access, query, copy, monitor, index, scrape, crawl, harvest, automate, or interact with the Services through bots, scripts, agents, browser automation, data-extraction tools, reverse engineering, or other automated means unless Vennet gives prior written permission.",
+    "You may not attempt to discover source code, bypass access controls, interfere with the Services, create accounts or transactions by automated means, or use automation to gain an unfair commercial, technical, or marketplace advantage. This prohibition is in addition to, and does not limit, the anti-circumvention and prohibited-conduct provisions of these Terms.",
+  ]],
 ];
 
 export default function TermsPage() {
