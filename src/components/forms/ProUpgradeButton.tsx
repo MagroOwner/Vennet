@@ -1,39 +1,26 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { upgradeToPro } from "@/lib/actions/identity";
+import { startProCheckout } from "@/lib/actions/pro";
 
 export function ProUpgradeButton({ hasIdentity }: { hasIdentity: boolean }) {
-  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function upgrade() {
-    setBusy(true);
-    setError(null);
+    setBusy(true); setError(null);
     try {
-      const result = await upgradeToPro();
-      if (!result.ok) {
-        setError(result.error);
-        return;
-      }
-      router.refresh();
-    } finally {
-      setBusy(false);
-    }
+      const result = await startProCheckout();
+      if (!result.ok) { setError(result.error); return; }
+      window.location.href = result.url;
+    } finally { setBusy(false); }
   }
 
-  return (
-    <div className="mt-8">
-      {error && <p className="mb-2 text-sm text-red-400">{error}</p>}
-      <button
-        onClick={upgrade}
-        disabled={busy || !hasIdentity}
-        className="w-full rounded-lg bg-emerald-600 py-3 font-medium hover:bg-emerald-500 disabled:opacity-50"
-      >
-        {hasIdentity ? (busy ? "Upgrading…" : "Upgrade to Pro") : "Create an identity first"}
-      </button>
-    </div>
-  );
+  return <div className="mt-8">
+    {error && <p className="mb-2 text-sm text-red-400">{error}</p>}
+    <button onClick={upgrade} disabled={busy || !hasIdentity} className="w-full rounded-lg bg-emerald-500 py-3 font-semibold text-zinc-950 hover:bg-emerald-400 disabled:opacity-50">
+      {hasIdentity ? (busy ? "Opening secure checkout…" : "Upgrade to Vennet Pro") : "Create an identity first"}
+    </button>
+    {hasIdentity && <p className="mt-3 text-center text-xs text-zinc-500">Secure monthly billing powered by Stripe. Cancel through Stripe at any time.</p>}
+  </div>;
 }
