@@ -166,7 +166,7 @@ export async function updateListing(
     const listingLimit = data.category === "digital" || data.category === "services" || data.category === "other"
       ? listingLimits[data.category]
       : 0;
-    if (listingLimit === 0) {
+    if (listingLimit === 0 && data.category !== listing.category) {
       throw new ActionError("Subscriptions are a Vennet Pro seller feature. Upgrade to Pro to list them.");
     }
     if (data.category !== listing.category) {
