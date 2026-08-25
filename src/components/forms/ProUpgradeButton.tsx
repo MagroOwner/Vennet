@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { startProCheckout } from "@/lib/actions/pro";
 
-export function ProUpgradeButton({ hasIdentity }: { hasIdentity: boolean }) {
+export function ProUpgradeButton({ hasIdentity, isPro = false }: { hasIdentity: boolean; isPro?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,7 +19,7 @@ export function ProUpgradeButton({ hasIdentity }: { hasIdentity: boolean }) {
   return <div className="mt-8">
     {error && <p className="mb-2 text-sm text-red-400">{error}</p>}
     <button onClick={upgrade} disabled={busy || !hasIdentity} className="w-full rounded-lg bg-emerald-500 py-3 font-semibold text-zinc-950 hover:bg-emerald-400 disabled:opacity-50">
-      {hasIdentity ? (busy ? "Opening secure checkout…" : "Upgrade to Vennet Pro") : "Create an identity first"}
+      {hasIdentity ? (busy ? "Opening secure checkout…" : isPro ? "Set up Stripe billing" : "Upgrade to Vennet Pro") : "Create an identity first"}
     </button>
     {hasIdentity && <p className="mt-3 text-center text-xs text-zinc-500">Secure monthly billing powered by Stripe. Cancel through Stripe at any time.</p>}
   </div>;
