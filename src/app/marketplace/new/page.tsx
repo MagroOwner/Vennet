@@ -13,7 +13,7 @@ export default async function NewListingPage() {
     return <p className="mx-auto max-w-xl text-center text-slate-400">Set up your Vennet profile from your dashboard before selling.</p>;
   }
 
-  if (!stripeAccount?.chargesEnabled) {
+  if (!stripeAccount?.chargesEnabled || !stripeAccount.payoutsEnabled) {
     return (
       <div className="mx-auto max-w-xl rounded-2xl border border-amber-400/25 bg-amber-400/10 p-7">
         <p className="text-sm font-semibold text-amber-200">Stripe payout setup required</p>
