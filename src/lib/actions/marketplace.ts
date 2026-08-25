@@ -125,6 +125,9 @@ export async function purchaseListing(
     if (listing.status !== "active") {
       throw new ActionError("Listing is not available.");
     }
+    if (!listing.deliveryInstructions || !listing.supportContact || (listing.category === "digital" && listing.deliveryFilePaths.length === 0)) {
+      throw new ActionError("This listing is missing required delivery information and cannot be purchased yet.");
+    }
     if (listing.sellerId === userId) {
       await raiseFraudSignal(
         userId,
