@@ -12,7 +12,7 @@ const gridClasses: Record<DisplaySize, string> = {
   large: "grid gap-6 md:grid-cols-2",
 };
 
-export function MarketplaceGrid({ listings }: { listings: Listing[] }) {
+export function MarketplaceGrid({ listings, heading = "Explore offers" }: { listings: Listing[]; heading?: string }) {
   const [size, setSize] = useState<DisplaySize>("medium");
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export function MarketplaceGrid({ listings }: { listings: Listing[] }) {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><h2 className="text-xl font-bold text-slate-950">Explore offers</h2><p className="mt-1 text-sm text-slate-600">{listings.length} available</p></div>
+        <div><h2 className="text-xl font-bold text-slate-950">{heading}</h2><p className="mt-1 text-sm text-slate-600">{listings.length} available</p></div>
         <div className="inline-flex rounded-xl border border-slate-300 bg-white/75 p-1 shadow-sm" aria-label="Listing display size">
           {(["small", "medium", "large"] as DisplaySize[]).map((option) => <button key={option} type="button" onClick={() => chooseSize(option)} className={size === option ? "rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-semibold capitalize text-white" : "rounded-lg px-3 py-1.5 text-sm font-medium capitalize text-slate-600 transition hover:bg-slate-100"}>{option}</button>)}
         </div>
