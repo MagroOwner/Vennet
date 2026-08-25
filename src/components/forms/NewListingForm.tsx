@@ -12,7 +12,7 @@ const OFFER_TYPES: { value: ListingCategory; label: string }[] = [
   { value: "other", label: "Subscription or membership" },
 ];
 
-export function NewListingForm() {
+export function NewListingForm({ isPro }: { isPro: boolean }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -67,8 +67,11 @@ export function NewListingForm() {
     } finally { setBusy(false); }
   }
 
+  const availableOfferTypes = isPro ? OFFER_TYPES : OFFER_TYPES.filter((option) => option.value !== "other");
+  const limitMessage = isPro ? "Pro limits: 10 digital products, 4 services, and 2 subscriptions." : "Free limits: 2 digital products and 1 service. Upgrade to Pro to list subscriptions and unlock more listings.";
+
   return <form onSubmit={submit} className="mt-6 space-y-5">
-    <div><label className="mb-1 block text-sm font-medium">What are you selling?</label><select value={category} onChange={(e) => setCategory(e.target.value as ListingCategory)} className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2">{OFFER_TYPES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div>
+    <div><label className="mb-1 block text-sm font-medium">What are you selling?</label><select value={category} onChange={(e) => setCategory(e.target.value as ListingCategory)} className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2">{availableOfferTypes.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select><p className="mt-2 text-sm text-slate-400">{limitMessage}</p>{!isPro && <a href="/pro" className="mt-1 inline-block text-sm font-semibold text-emerald-300 hover:text-emerald-200">Explore Vennet Pro →</a>}</div>
     <div><label className="mb-1 block text-sm font-medium">Title</label><input required placeholder="e.g. Brand identity template" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2" /></div>
     <div><label className="mb-1 block text-sm font-medium">Description</label><textarea required rows={5} placeholder="Describe what the buyer receives, how it is delivered, and any requirements." value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2" /></div>
     <div><label className="mb-1 block text-sm font-medium">Price (USD)</label><input required type="number" min="1" step="0.01" placeholder="0.00" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2" /></div>
