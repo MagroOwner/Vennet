@@ -95,6 +95,7 @@ export async function updateIdentity(
 
     await logActivity(userId, "identity_updated", {});
     revalidatePath("/settings");
+    revalidatePath("/profile");
     revalidatePath("/dashboard");
     return { ok: true };
   } catch (error) {
