@@ -28,6 +28,12 @@ const createListingSchema = z.object({
     .array(z.string().url().max(2048))
     .max(8, "Up to 8 image URLs allowed.")
     .default([]),
+  deliveryFilePaths: z
+    .array(z.string().min(1).max(512).startsWith("deliveryFiles/", "Invalid delivery file."))
+    .max(8, "Up to 8 delivery files allowed.")
+    .default([]),
+  deliveryInstructions: z.string().trim().min(10, "Explain how the buyer will access their purchase.").max(5000),
+  supportContact: z.string().trim().min(3, "Provide a support email, link, or contact method.").max(500),
 });
 
 export async function createListing(
@@ -54,6 +60,12 @@ export async function createListing(
     if (!stripeAccount?.chargesEnabled || !stripeAccount.payoutsEnabled) {
       throw new ActionError("Connect and complete Stripe onboarding before creating a listing.");
     }
+    if (data.category === "digital" && data.deliveryFilePaths.length === 0) {
+      throw new ActionError("Upload at least one downloadable file for a digital product.");
+    }
+    if (!data.deliveryFilePaths.every((path) => path.startsWith(`deliveryFiles/${userId}/`))) {
+      throw new ActionError("Delivery files must be uploaded by the listing seller.");
+    }
 
     // Fraud check: rapid listing creation.
     const recentListings = await countRecentActivity(userId, "listing_created", 10);
@@ -77,6 +89,9 @@ export async function createListing(
         priceCents: data.priceCents,
         currency: "usd",
         imageUrls: data.imageUrls,
+        deliveryFilePaths: data.deliveryFilePaths,
+        deliveryInstructions: data.deliveryInstructions,
+        supportContact: data.supportContact,
         status: "active",
       })
       .returning({ id: listings.id });
