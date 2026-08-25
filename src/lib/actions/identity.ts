@@ -103,34 +103,8 @@ export async function updateIdentity(
 }
 
 export async function upgradeToPro(): Promise<ActionResult> {
-  try {
-    const { userId } = await requireAuth();
-    const [existing] = await db
-      .select({ userId: identities.userId })
-      .from(identities)
-      .where(eq(identities.userId, userId))
-      .limit(1);
-    if (!existing) {
-      throw new ActionError("Identity does not exist.");
-    }
-
-    // In production this is gated on a Stripe subscription; the webhook flips
-    // isPro on invoice.paid events.
-    await db.transaction(async (tx) => {
-      await tx
-        .update(identities)
-        .set({ isPro: true, updatedAt: new Date() })
-        .where(eq(identities.userId, userId));
-      await tx
-        .update(users)
-        .set({ isPro: true, updatedAt: new Date() })
-        .where(eq(users.id, userId));
-    });
-
-    revalidatePath("/pro");
-    revalidatePath("/dashboard");
-    return { ok: true };
-  } catch (error) {
-    return failure(error);
-  }
+  return {
+    ok: false,
+    error: "Vennet Pro is activated only after Stripe confirms a successful subscription payment.",
+  };
 }
