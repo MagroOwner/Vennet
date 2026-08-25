@@ -24,11 +24,8 @@ export default async function ProPage() {
           <li key={benefit}>• {benefit}</li>
         ))}
       </ul>
-      {identity?.isPro ? (
-        <p className="mt-8 font-medium text-emerald-400">You are a Vennet Pro member.</p>
-      ) : (
-        <ProUpgradeButton hasIdentity={Boolean(identity)} />
-      )}
+      {identity?.isPro && <p className="mt-8 font-medium text-emerald-400">Your Vennet Pro access is currently active.</p>}
+      <ProUpgradeButton hasIdentity={Boolean(identity)} isPro={Boolean(identity?.isPro)} />
     </div>
   );
 }
