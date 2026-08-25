@@ -41,7 +41,9 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 export const authOptions: NextAuthOptions = {
   providers,
-  session: { strategy: "jwt" },
+  // Persistent, secure login session. Users remain signed in for 30 days unless they sign out or clear browser data.
+  session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30, updateAge: 60 * 60 * 24 },
+  jwt: { maxAge: 60 * 60 * 24 * 30 },
   pages: { signIn: "/login" },
   callbacks: {
     async signIn({ user, account }) {
