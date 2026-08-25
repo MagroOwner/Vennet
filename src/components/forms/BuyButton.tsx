@@ -30,7 +30,7 @@ export function BuyButton({
       setBusy(false);
       return;
     }
-    router.push(`/dashboard?purchased=${result.transactionId}`);
+    window.location.assign(result.url);
   }
 
   return (
