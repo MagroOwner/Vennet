@@ -33,7 +33,8 @@ body {
 }
 
 @layer components {
-  .console-page { @apply space-y-7; }\n  .pro-glow { @apply pointer-events-none absolute rounded-full blur-3xl; }\n  .pro-glow-left { @apply -left-40 top-1/3 h-[30rem] w-[30rem] bg-emerald-500/15; }\n  .pro-glow-right { @apply -right-32 -top-28 h-[28rem] w-[28rem] bg-lime-300/10; }\n  .pro-grid { @apply pointer-events-none absolute inset-0 opacity-30; background-image: linear-gradient(rgb(163 230 53 / 0.07) 1px, transparent 1px), linear-gradient(90deg, rgb(163 230 53 / 0.07) 1px, transparent 1px); background-size: 42px 42px; mask-image: linear-gradient(to bottom, black, transparent 82%); }
+  .console-page { @apply space-y-7; }
+  .top-nav-link { @apply rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-emerald-300/10 hover:text-emerald-100; }\n  .pro-glow { @apply pointer-events-none absolute rounded-full blur-3xl; }\n  .pro-glow-left { @apply -left-40 top-1/3 h-[30rem] w-[30rem] bg-emerald-500/15; }\n  .pro-glow-right { @apply -right-32 -top-28 h-[28rem] w-[28rem] bg-lime-300/10; }\n  .pro-grid { @apply pointer-events-none absolute inset-0 opacity-30; background-image: linear-gradient(rgb(163 230 53 / 0.07) 1px, transparent 1px), linear-gradient(90deg, rgb(163 230 53 / 0.07) 1px, transparent 1px); background-size: 42px 42px; mask-image: linear-gradient(to bottom, black, transparent 82%); }
   .console-panel { @apply rounded-2xl border border-slate-800/80 bg-slate-900/[0.92] text-slate-100 shadow-[0_18px_55px_rgb(15_23_42/0.22)] backdrop-blur-sm; }
   .console-panel-header { @apply flex items-center justify-between border-b px-6 py-5; }
   .console-kicker { @apply text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-400; }
