@@ -197,7 +197,8 @@ CREATE INDEX "activity_logs_user_type_idx" ON "activity_logs" USING btree ("user
 CREATE UNIQUE INDEX "disputes_transaction_idx" ON "disputes" USING btree ("transaction_id");--> statement-breakpoint
 CREATE INDEX "disputes_status_idx" ON "disputes" USING btree ("status","created_at");--> statement-breakpoint
 CREATE INDEX "disputes_buyer_idx" ON "disputes" USING btree ("buyer_id","created_at");--> statement-breakpoint
-CREATE INDEX "fraud_signals_created_idx" ON "fraud_signals" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "fraud_signals_creaconnectionString: "postgres://..."
+ted_idx" ON "fraud_signals" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "listings_status_category_idx" ON "listings" USING btree ("status","category","created_at");--> statement-breakpoint
 CREATE INDEX "listings_seller_idx" ON "listings" USING btree ("seller_id","created_at");--> statement-breakpoint
 CREATE INDEX "reputation_logs_user_created_idx" ON "reputation_logs" USING btree ("user_id","created_at");--> statement-breakpoint
