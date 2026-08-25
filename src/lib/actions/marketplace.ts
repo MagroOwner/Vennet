@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { ActionError, failure } from "@/lib/action-error";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -50,7 +50,7 @@ export async function createListing(
     const data = createListingSchema.parse(input);
 
     const [identity] = await db
-      .select({ userId: identities.userId })
+      .select({ userId: identities.userId, isPro: identities.isPro })
       .from(identities)
       .where(eq(identities.userId, userId))
       .limit(1);
@@ -71,6 +71,24 @@ export async function createListing(
     }
     if (!data.deliveryFilePaths.every((path) => path.startsWith(`deliveryFiles/${userId}/`))) {
       throw new ActionError("Delivery files must be uploaded by the listing seller.");
+    }
+
+    const listingLimits = identity.isPro
+      ? { digital: 10, services: 4, other: 2 }
+      : { digital: 2, services: 1, other: 0 };
+    const listingLimit = data.category === "digital" || data.category === "services" || data.category === "other"
+      ? listingLimits[data.category]
+      : 0;
+    if (listingLimit === 0) {
+      throw new ActionError("Subscriptions are a Vennet Pro seller feature. Upgrade to Pro to list them.");
+    }
+    const [listingCount] = await db
+      .select({ total: count() })
+      .from(listings)
+      .where(and(eq(listings.sellerId, userId), eq(listings.category, data.category), eq(listings.status, "active")));
+    if ((listingCount?.total ?? 0) >= listingLimit) {
+      const label = data.category === "other" ? "subscription" : data.category === "services" ? "service" : "digital product";
+      throw new ActionError("Your " + label + " listing limit (" + listingLimit + ") has been reached. Upgrade to Vennet Pro for more capacity.");
     }
 
     // Fraud check: rapid listing creation.
