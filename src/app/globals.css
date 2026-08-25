@@ -2,23 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { --background: #08090b; --foreground: #f4f4f5; }
+:root { --background: #0b1020; --foreground: #f8fafc; }
 
-* { border-color: #27272a; }
+* { border-color: rgb(255 255 255 / 0.09); }
+html { scroll-behavior: smooth; }
 body {
+  min-height: 100vh;
   color: var(--foreground);
-  background: var(--background);
+  background:
+    radial-gradient(900px 480px at 8% -10%, rgb(16 185 129 / 0.18), transparent 65%),
+    radial-gradient(720px 520px at 92% 4%, rgb(99 102 241 / 0.16), transparent 62%),
+    #0b1020;
   font-family: Arial, Helvetica, sans-serif;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.012em;
 }
-::selection { background: #00e87a; color: #07110b; }
+::selection { background: #5eead4; color: #07111c; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes drift { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(1deg); } }
+@keyframes pulse-glow { 0%,100% { box-shadow: 0 0 0 0 rgb(16 185 129 / 0); } 50% { box-shadow: 0 0 32px 4px rgb(16 185 129 / 0.13); } }
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-rise { animation: rise 600ms cubic-bezier(.22,1,.36,1) both; }
+  .animate-rise-delay { animation: rise 600ms 120ms cubic-bezier(.22,1,.36,1) both; }
+  .animate-rise-delay-2 { animation: rise 600ms 220ms cubic-bezier(.22,1,.36,1) both; }
+  .animate-drift { animation: drift 7s ease-in-out infinite; }
+  .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+}
 
 @layer components {
-  .console-page { @apply space-y-6; }
-  .console-panel { @apply rounded-xl border border-zinc-800 bg-[#111318] shadow-sm; }
-  .console-panel-header { @apply flex items-center justify-between border-b border-zinc-800 px-5 py-4; }
-  .console-kicker { @apply font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500; }
-  .console-link { @apply font-mono text-[11px] font-bold uppercase tracking-tight text-emerald-400 hover:text-emerald-300 hover:underline; }
-  .console-status { @apply inline-flex items-center gap-1 rounded border border-emerald-700/70 bg-emerald-950/40 px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-400; }
-  .console-row { @apply flex items-center justify-between gap-4 rounded-lg border border-zinc-800 bg-[#090b0e] px-4 py-3; }
+  .console-page { @apply space-y-7; }
+  .console-panel { @apply rounded-2xl border bg-slate-950/55 shadow-[0_18px_55px_rgb(0_0_0/0.18)] backdrop-blur-sm; }
+  .console-panel-header { @apply flex items-center justify-between border-b px-6 py-5; }
+  .console-kicker { @apply text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-400; }
+  .console-link { @apply text-sm font-semibold text-emerald-300 transition hover:text-emerald-200 hover:underline; }
+  .console-status { @apply inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-300; }
+  .console-row { @apply flex items-center justify-between gap-4 rounded-xl border bg-slate-950/75 px-4 py-3.5 transition hover:border-white/20 hover:bg-slate-900/80; }
+  .button-primary { @apply inline-flex items-center justify-center rounded-xl bg-emerald-400 px-5 py-3 font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 hover:bg-emerald-300 hover:shadow-emerald-500/30; }
+  .button-secondary { @apply inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/[0.04] px-5 py-3 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/[0.09]; }
 }
