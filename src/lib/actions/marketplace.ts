@@ -1,6 +1,6 @@
 "use server";
 
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, ne } from "drizzle-orm";
 import { ActionError, failure } from "@/lib/action-error";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -122,6 +122,87 @@ export async function createListing(
 
     await logActivity(userId, "listing_created", { listingId: listing.id });
     revalidatePath("/marketplace");
+    revalidatePath("/dashboard/seller");
+    return { ok: true, listingId: listing.id };
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+
+const updateListingSchema = createListingSchema.extend({
+  listingId: z.string().uuid("Listing not found."),
+});
+
+export async function updateListing(
+  input: z.input<typeof updateListingSchema>
+): Promise<ActionResult<{ listingId: string }>> {
+  try {
+    const { userId } = await requireAuth();
+    const data = updateListingSchema.parse(input);
+    const [listing] = await db
+      .select()
+      .from(listings)
+      .where(and(eq(listings.id, data.listingId), eq(listings.sellerId, userId)))
+      .limit(1);
+    if (!listing) throw new ActionError("You can only edit your own listings.");
+
+    const [identity] = await db
+      .select({ isPro: identities.isPro })
+      .from(identities)
+      .where(eq(identities.userId, userId))
+      .limit(1);
+    if (!identity) throw new ActionError("Create a Vennet identity before editing listings.");
+    if (data.category === "digital" && data.deliveryFilePaths.length === 0) {
+      throw new ActionError("Upload at least one downloadable file for a digital product.");
+    }
+    if (!data.deliveryFilePaths.every((path) => path.startsWith(`deliveryFiles/${userId}/`))) {
+      throw new ActionError("Delivery files must be uploaded by the listing seller.");
+    }
+
+    const listingLimits = identity.isPro
+      ? { digital: 10, services: 4, other: 2 }
+      : { digital: 2, services: 1, other: 0 };
+    const listingLimit = data.category === "digital" || data.category === "services" || data.category === "other"
+      ? listingLimits[data.category]
+      : 0;
+    if (listingLimit === 0) {
+      throw new ActionError("Subscriptions are a Vennet Pro seller feature. Upgrade to Pro to list them.");
+    }
+    if (data.category !== listing.category) {
+      const [listingCount] = await db
+        .select({ total: count() })
+        .from(listings)
+        .where(and(
+          eq(listings.sellerId, userId),
+          eq(listings.category, data.category),
+          eq(listings.status, "active"),
+          ne(listings.id, listing.id)
+        ));
+      if ((listingCount?.total ?? 0) >= listingLimit) {
+        const label = data.category === "other" ? "subscription" : data.category === "services" ? "service" : "digital product";
+        throw new ActionError("Your " + label + " listing limit (" + listingLimit + ") has been reached.");
+      }
+    }
+
+    await db
+      .update(listings)
+      .set({
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        priceCents: data.priceCents,
+        imageUrls: data.imageUrls,
+        deliveryFilePaths: data.deliveryFilePaths,
+        deliveryInstructions: data.deliveryInstructions,
+        supportContact: data.supportContact,
+        updatedAt: new Date(),
+      })
+      .where(eq(listings.id, listing.id));
+
+    revalidatePath("/marketplace");
+    revalidatePath("/marketplace/" + listing.id);
+    revalidatePath("/marketplace/" + listing.id + "/edit");
     revalidatePath("/dashboard/seller");
     return { ok: true, listingId: listing.id };
   } catch (error) {
