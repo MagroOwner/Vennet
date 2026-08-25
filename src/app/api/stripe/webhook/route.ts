@@ -2,29 +2,38 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { db } from "@/lib/db";
-import { stripeAccounts, transactions } from "@/lib/db/schema";
+import { identities, stripeAccounts, transactions, users } from "@/lib/db/schema";
 import { completeTransaction } from "@/lib/services/transactions";
 import { getStripe } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-async function markTransactionStatus(
-  paymentIntentId: string,
-  status: "failed" | "refunded"
-): Promise<void> {
-  await db
-    .update(transactions)
-    .set({ status, updatedAt: new Date() })
-    .where(eq(transactions.stripePaymentIntentId, paymentIntentId));
+async function markTransactionStatus(paymentIntentId: string, status: "failed" | "refunded"): Promise<void> {
+  await db.update(transactions).set({ status, updatedAt: new Date() }).where(eq(transactions.stripePaymentIntentId, paymentIntentId));
+}
+
+async function setPro(userId: string, isPro: boolean): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx.update(users).set({ isPro, updatedAt: new Date() }).where(eq(users.id, userId));
+    await tx.update(identities).set({ isPro, updatedAt: new Date() }).where(eq(identities.userId, userId));
+  });
+}
+
+async function userIdForSubscription(subscriptionId: string): Promise<string | undefined> {
+  const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
+  return subscription.metadata.vennetUserId || undefined;
+}
+
+function invoiceSubscriptionId(invoice: Stripe.Invoice): string | undefined {
+  const value = invoice as unknown as { subscription?: string; parent?: { subscription_details?: { subscription?: string } } };
+  return value.subscription ?? value.parent?.subscription_details?.subscription;
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
   const signature = request.headers.get("stripe-signature");
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!signature || !secret) {
-    return NextResponse.json({ error: "Missing webhook signature." }, { status: 400 });
-  }
+  if (!signature || !secret) return NextResponse.json({ error: "Missing webhook signature." }, { status: 400 });
 
   const payload = await request.text();
   let event: Stripe.Event;
@@ -40,33 +49,53 @@ export async function POST(request: Request): Promise<NextResponse> {
       case "payment_intent.succeeded": {
         const intent = event.data.object;
         const transactionId = intent.metadata?.transactionId;
-        if (transactionId) {
-          await completeTransaction(transactionId);
-        }
+        if (transactionId) await completeTransaction(transactionId);
         break;
       }
-      case "payment_intent.payment_failed": {
+      case "payment_intent.payment_failed":
         await markTransactionStatus(event.data.object.id, "failed");
         break;
-      }
       case "charge.refunded": {
         const paymentIntent = event.data.object.payment_intent;
-        if (typeof paymentIntent === "string") {
-          await markTransactionStatus(paymentIntent, "refunded");
-        }
+        if (typeof paymentIntent === "string") await markTransactionStatus(paymentIntent, "refunded");
         break;
       }
       case "account.updated": {
         const account = event.data.object;
-        await db
-          .update(stripeAccounts)
-          .set({
-            chargesEnabled: account.charges_enabled ?? false,
-            payoutsEnabled: account.payouts_enabled ?? false,
-            onboardingComplete: account.details_submitted ?? false,
-            updatedAt: new Date(),
-          })
-          .where(eq(stripeAccounts.stripeAccountId, account.id));
+        await db.update(stripeAccounts).set({
+          chargesEnabled: account.charges_enabled ?? false,
+          payoutsEnabled: account.payouts_enabled ?? false,
+          onboardingComplete: account.details_submitted ?? false,
+          updatedAt: new Date(),
+        }).where(eq(stripeAccounts.stripeAccountId, account.id));
+        break;
+      }
+      case "checkout.session.completed": {
+        const session = event.data.object;
+        const userId = session.client_reference_id ?? session.metadata?.vennetUserId;
+        if (userId && session.mode === "subscription" && session.payment_status === "paid") await setPro(userId, true);
+        break;
+      }
+      case "invoice.paid": {
+        const subscriptionId = invoiceSubscriptionId(event.data.object);
+        if (subscriptionId) {
+          const userId = await userIdForSubscription(subscriptionId);
+          if (userId) await setPro(userId, true);
+        }
+        break;
+      }
+      case "invoice.payment_failed": {
+        const subscriptionId = invoiceSubscriptionId(event.data.object);
+        if (subscriptionId) {
+          const userId = await userIdForSubscription(subscriptionId);
+          if (userId) await setPro(userId, false);
+        }
+        break;
+      }
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object;
+        const userId = subscription.metadata.vennetUserId;
+        if (userId) await setPro(userId, false);
         break;
       }
       default:
@@ -76,6 +105,5 @@ export async function POST(request: Request): Promise<NextResponse> {
     console.error(`Failed to handle Stripe event ${event.type}`, error);
     return NextResponse.json({ error: "Handler error." }, { status: 500 });
   }
-
   return NextResponse.json({ received: true });
 }
