@@ -8,19 +8,22 @@ export function ProUpgradeButton({ hasIdentity, isPro = false }: { hasIdentity: 
   const [error, setError] = useState<string | null>(null);
 
   async function upgrade() {
-    setBusy(true); setError(null);
+    setBusy(true);
+    setError(null);
     try {
       const result = await startProCheckout();
       if (!result.ok) { setError(result.error); return; }
       window.location.href = result.url;
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   }
 
   return <div className="mt-8">
-    {error && <p className="mb-2 text-sm text-red-400">{error}</p>}
-    <button onClick={upgrade} disabled={busy || !hasIdentity} className="w-full rounded-lg bg-emerald-500 py-3 font-semibold text-zinc-950 hover:bg-emerald-400 disabled:opacity-50">
-      {hasIdentity ? (busy ? "Opening secure checkout…" : isPro ? "Set up Stripe billing" : "Upgrade to Vennet Pro") : "Create an identity first"}
+    {error && <p className="mb-3 text-sm text-red-300">{error}</p>}
+    <button onClick={upgrade} disabled={busy || !hasIdentity} className="button-primary w-full disabled:cursor-not-allowed disabled:opacity-50">
+      {hasIdentity ? (busy ? "Opening secure checkout…" : isPro ? "Manage Pro billing" : "Upgrade to Vennet Pro") : "Create your profile first"}
+      <span className="ml-2" aria-hidden="true">→</span>
     </button>
-    {hasIdentity && <p className="mt-3 text-center text-xs text-zinc-500">Secure monthly billing powered by Stripe. Cancel through Stripe at any time.</p>}
   </div>;
 }
