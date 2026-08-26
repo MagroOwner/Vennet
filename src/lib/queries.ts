@@ -11,6 +11,7 @@ import {
   purchaseMessages,
   reputationLogs,
   reputationScores,
+  referralCodes,
   savedListings,
   roles,
   stripeAccounts,
@@ -201,4 +202,9 @@ export async function getPurchaseMessages(transactionId: string) {
 export async function getSavedListingIds(userId: string): Promise<string[]> {
   const rows = await db.select({ listingId: savedListings.listingId }).from(savedListings).where(eq(savedListings.userId, userId));
   return rows.map((row) => row.listingId);
+}
+
+export async function getReferralCode(userId: string): Promise<string | null> {
+  const [row] = await db.select({ code: referralCodes.code }).from(referralCodes).where(eq(referralCodes.userId, userId)).limit(1);
+  return row?.code ?? null;
 }
