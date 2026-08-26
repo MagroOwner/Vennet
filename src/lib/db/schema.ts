@@ -138,6 +138,7 @@ export const emailVerificationTokens = pgTable(
     codeHash: text("code_hash").notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     attempts: integer("attempts").notNull().default(0),
+    referralCode: text("referral_code").notNull().default(""),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
@@ -225,6 +226,10 @@ export const listings = pgTable(
     deliveryTime: text("delivery_time").notNull().default("Available after payment"),
     viewCount: integer("view_count").notNull().default(0),
     featured: boolean("featured").notNull().default(false),
+    fileType: text("file_type").notNull().default(""),
+    compatibility: text("compatibility").notNull().default(""),
+    includesUpdates: boolean("includes_updates").notNull().default(false),
+    updatePolicy: text("update_policy").notNull().default(""),
     status: listingStatusEnum("status").notNull().default("active"),
     purchaseCount: integer("purchase_count").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -277,6 +282,8 @@ export const listingReviews = pgTable(
     rating: integer("rating").notNull(),
     body: text("body").notNull().default(""),
     hidden: boolean("hidden").notNull().default(false),
+    sellerReply: text("seller_reply").notNull().default(""),
+    sellerRepliedAt: timestamp("seller_replied_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
@@ -333,6 +340,49 @@ export const notifications = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({ userIdx: index("notifications_user_idx").on(table.userId, table.createdAt) })
+);
+
+export const priceAlerts = pgTable(
+  "price_alerts",
+  {
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    listingId: uuid("listing_id").notNull().references(() => listings.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({ alertIdx: uniqueIndex("price_alerts_user_listing_idx").on(table.userId, table.listingId) })
+);
+
+export const referrals = pgTable(
+  "referrals",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    referrerId: uuid("referrer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    refereeId: uuid("referee_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    status: text("status").notNull().default("signed_up"),
+    rewardCents: integer("reward_cents").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    qualifiedAt: timestamp("qualified_at", { withTimezone: true }),
+  },
+  (table) => ({
+    refereeIdx: uniqueIndex("referrals_referee_idx").on(table.refereeId),
+    referrerIdx: index("referrals_referrer_idx").on(table.referrerId, table.createdAt),
+  })
+);
+
+export const listingBundles = pgTable(
+  "listing_bundles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sellerId: uuid("seller_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    listingIds: jsonb("listing_ids").$type<string[]>().notNull().default([]),
+    discountPercent: integer("discount_percent").notNull().default(10),
+    active: boolean("active").notNull().default(true),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({ sellerIdx: index("listing_bundles_seller_idx").on(table.sellerId, table.createdAt) })
 );
 
 export const listingImages = pgTable("listing_images", {
