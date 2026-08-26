@@ -1,6 +1,6 @@
 "use server";
 
-import { and, count, eq, inArray, ne } from "drizzle-orm";
+import { and, count, eq, ne } from "drizzle-orm";
 import { ActionError, failure } from "@/lib/action-error";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
