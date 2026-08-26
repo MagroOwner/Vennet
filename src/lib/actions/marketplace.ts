@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { identities, listings, stripeAccounts, transactions } from "@/lib/db/schema";
+import { identities, listings, sellerCoupons, stripeAccounts, transactions } from "@/lib/db/schema";
 import { countRecentActivity, logActivity } from "@/lib/services/activity";
 import { raiseFraudSignal } from "@/lib/services/fraud";
 import { getStripe, PLATFORM_FEE_BPS } from "@/lib/stripe";
@@ -237,14 +237,14 @@ export async function updateListing(
   }
 }
 
-const purchaseSchema = z.object({ listingId: z.string().uuid("listingId is required.") });
+const purchaseSchema = z.object({ listingId: z.string().uuid("listingId is required."), couponCode: z.string().trim().toUpperCase().max(32).optional() });
 
 export async function purchaseListing(
   input: z.input<typeof purchaseSchema>
 ): Promise<ActionResult<{ transactionId: string; url: string }>> {
   try {
     const { userId } = await requireAuth();
-    const { listingId } = purchaseSchema.parse(input);
+    const { listingId, couponCode } = purchaseSchema.parse(input);
 
     const [listing] = await db
       .select()
@@ -290,7 +290,13 @@ export async function purchaseListing(
       throw new ActionError("Seller has not completed Stripe onboarding.");
     }
 
-    const platformFeeCents = Math.round((listing.priceCents * PLATFORM_FEE_BPS) / 10_000);
+    let amountCents = listing.priceCents;
+    if (couponCode) {
+      const [coupon] = await db.select().from(sellerCoupons).where(and(eq(sellerCoupons.sellerId, listing.sellerId), eq(sellerCoupons.code, couponCode), eq(sellerCoupons.active, true))).limit(1);
+      if (!coupon || (coupon.expiresAt && coupon.expiresAt <= new Date())) throw new ActionError("That launch offer is not available.");
+      amountCents = Math.max(1, Math.round(listing.priceCents * (100 - coupon.discountPercent) / 100));
+    }
+    const platformFeeCents = Math.round((amountCents * PLATFORM_FEE_BPS) / 10_000);
 
     const [transaction] = await db
       .insert(transactions)
@@ -298,7 +304,7 @@ export async function purchaseListing(
         listingId,
         buyerId: userId,
         sellerId: listing.sellerId,
-        amountCents: listing.priceCents,
+        amountCents,
         platformFeeCents,
         currency: listing.currency,
         status: "pending",
@@ -311,7 +317,7 @@ export async function purchaseListing(
         quantity: 1,
         price_data: {
           currency: listing.currency,
-          unit_amount: listing.priceCents,
+          unit_amount: amountCents,
           product_data: { name: listing.title, description: listing.description.slice(0, 500) },
         },
       }],
