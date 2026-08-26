@@ -1,12 +1,12 @@
 "use server";
 
-import { and, count, eq, ne } from "drizzle-orm";
+import { and, count, eq, inArray, ne } from "drizzle-orm";
 import { ActionError, failure } from "@/lib/action-error";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { creatorFollows, identities, listings, notifications, priceAlerts, sellerCoupons, stripeAccounts, transactions } from "@/lib/db/schema";
+import { cartItems, creatorFollows, identities, listings, notifications, priceAlerts, sellerCoupons, stripeAccounts, transactions } from "@/lib/db/schema";
 import { countRecentActivity, logActivity } from "@/lib/services/activity";
 import { raiseFraudSignal } from "@/lib/services/fraud";
 import { getStripe, PLATFORM_FEE_BPS } from "@/lib/stripe";
@@ -348,4 +348,34 @@ export async function purchaseListing(
   } catch (error) {
     return failure(error);
   }
+}
+
+export async function purchaseCart(): Promise<ActionResult<{ url: string }>> {
+  try {
+    const { userId } = await requireAuth();
+    const rows = await db.select({ listing: listings }).from(cartItems).innerJoin(listings, eq(cartItems.listingId, listings.id)).where(eq(cartItems.userId, userId));
+    const cartListings = rows.map((row) => row.listing);
+    if (!cartListings.length) throw new ActionError("Your cart is empty.");
+    if (cartListings.some((listing) => listing.status !== "active")) throw new ActionError("Remove unavailable offers before checkout.");
+    const sellerId = cartListings[0].sellerId;
+    if (cartListings.some((listing) => listing.sellerId !== sellerId)) throw new ActionError("For protected Stripe payouts, check out items from one creator at a time.");
+    const [sellerAccount] = await db.select().from(stripeAccounts).where(eq(stripeAccounts.userId, sellerId)).limit(1);
+    if (!sellerAccount?.chargesEnabled) throw new ActionError("This creator cannot accept payments yet.");
+    const transactionRows = await db.transaction(async (tx) => Promise.all(cartListings.map(async (listing) => {
+      const fee = Math.round((listing.priceCents * PLATFORM_FEE_BPS) / 10_000);
+      const [transaction] = await tx.insert(transactions).values({ listingId: listing.id, buyerId: userId, sellerId, amountCents: listing.priceCents, platformFeeCents: fee, currency: listing.currency, status: "pending" }).returning({ id: transactions.id });
+      return { transaction, fee };
+    })));
+    const checkout = await getStripe().checkout.sessions.create({
+      mode: "payment",
+      line_items: cartListings.map((listing) => ({ quantity: 1, price_data: { currency: listing.currency, unit_amount: listing.priceCents, product_data: { name: listing.title, description: listing.description.slice(0, 500) } } })),
+      payment_intent_data: { application_fee_amount: transactionRows.reduce((total, row) => total + row.fee, 0), transfer_data: { destination: sellerAccount.stripeAccountId }, metadata: { transactionIds: transactionRows.map((row) => row.transaction.id).join(","), buyerId: userId } },
+      client_reference_id: userId,
+      metadata: { transactionIds: transactionRows.map((row) => row.transaction.id).join(","), listingIds: cartListings.map((listing) => listing.id).join(","), buyerId: userId },
+      success_url: appUrl() + "/inventory?purchase=success",
+      cancel_url: appUrl() + "/cart?checkout=cancelled",
+    });
+    if (!checkout.url) throw new ActionError("Stripe could not start cart checkout.");
+    return { ok: true, url: checkout.url };
+  } catch (error) { return failure(error); }
 }
