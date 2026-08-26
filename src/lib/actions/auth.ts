@@ -21,7 +21,10 @@ const confirmEmailSchema = z.object({
 });
 
 function createCode() {
-  return randomInt(100async function readSmtpResponseasync function sendVerificationEmail(email: string, code: string) {
+  return randomInt(100000, 1_000_000).toString();
+}
+
+async function sendVerificationEmail(email: string, code: string) {
   const apiKey = process.env.SENDGRID_API_KEY;
   const fromEmail = process.env.SENDGRID_FROM_EMAIL;
   const fromName = process.env.SENDGRID_FROM_NAME ?? "Vennet";
