@@ -6,7 +6,7 @@ import { z } from "zod";
 import { ActionError, failure } from "@/lib/action-error";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { creatorFollows, listingReviews, purchaseMessages, referralCodes, savedListings, sellerCoupons, transactions } from "@/lib/db/schema";
+import { creatorFollows, listingReviews, notifications, priceAlerts, purchaseMessages, referralCodes, savedListings, sellerCoupons, transactions } from "@/lib/db/schema";
 import type { ActionResult } from "@/lib/types";
 
 export async function toggleSavedListing(listingId: string): Promise<ActionResult<{ saved: boolean }>> {
@@ -88,5 +88,31 @@ export async function createReferralCode(): Promise<ActionResult<{ code: string 
     await db.insert(referralCodes).values({ userId, code });
     revalidatePath("/dashboard/seller");
     return { ok: true, code };
+  } catch (error) { return failure(error); }
+}
+
+export async function togglePriceAlert(listingId: string): Promise<ActionResult<{ enabled: boolean }>> {
+  try {
+    const { userId } = await requireAuth();
+    const [existing] = await db.select().from(priceAlerts).where(and(eq(priceAlerts.userId, userId), eq(priceAlerts.listingId, listingId))).limit(1);
+    if (existing) {
+      await db.delete(priceAlerts).where(and(eq(priceAlerts.userId, userId), eq(priceAlerts.listingId, listingId)));
+      return { ok: true, enabled: false };
+    }
+    await db.insert(priceAlerts).values({ userId, listingId });
+    return { ok: true, enabled: true };
+  } catch (error) { return failure(error); }
+}
+
+const replySchema = z.object({ reviewId: z.string().uuid(), reply: z.string().trim().min(1).max(1500) });
+export async function replyToReview(input: z.input<typeof replySchema>): Promise<ActionResult> {
+  try {
+    const { userId } = await requireAuth();
+    const data = replySchema.parse(input);
+    const [review] = await db.select().from(listingReviews).where(and(eq(listingReviews.id, data.reviewId), eq(listingReviews.sellerId, userId))).limit(1);
+    if (!review) throw new ActionError("You can only reply to reviews on your own listings.");
+    await db.update(listingReviews).set({ sellerReply: data.reply, sellerRepliedAt: new Date() }).where(eq(listingReviews.id, review.id));
+    revalidatePath("/marketplace/" + review.listingId);
+    return { ok: true };
   } catch (error) { return failure(error); }
 }
