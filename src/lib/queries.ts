@@ -196,3 +196,9 @@ export async function getUnreadNotifications(userId: string) {
 export async function getPurchaseMessages(transactionId: string) {
   return db.select().from(purchaseMessages).where(eq(purchaseMessages.transactionId, transactionId)).orderBy(purchaseMessages.createdAt);
 }
+
+
+export async function getSavedListingIds(userId: string): Promise<string[]> {
+  const rows = await db.select({ listingId: savedListings.listingId }).from(savedListings).where(eq(savedListings.userId, userId));
+  return rows.map((row) => row.listingId);
+}
