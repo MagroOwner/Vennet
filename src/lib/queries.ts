@@ -10,6 +10,7 @@ import {
   listingReviews,
   listings,
   notifications,
+  notificationPreferences,
   purchaseMessages,
   reputationLogs,
   reputationScores,
@@ -254,4 +255,9 @@ export async function getBundle(id: string) {
 export async function getCartListings(userId: string): Promise<Listing[]> {
   const rows = await db.select({ listing: listings }).from(cartItems).innerJoin(listings, eq(cartItems.listingId, listings.id)).where(eq(cartItems.userId, userId)).orderBy(desc(cartItems.createdAt));
   return rows.map((row) => row.listing);
+}
+
+export async function getNotificationPreferences(userId: string) {
+  const [row] = await db.select().from(notificationPreferences).where(eq(notificationPreferences.userId, userId)).limit(1);
+  return row ?? { userId, priceDrops: true, creatorReleases: true, purchaseUpdates: true, productUpdates: true, updatedAt: new Date() };
 }
