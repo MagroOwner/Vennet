@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { identities, listings, sellerCoupons, stripeAccounts, transactions } from "@/lib/db/schema";
+import { creatorFollows, identities, listings, notifications, priceAlerts, sellerCoupons, stripeAccounts, transactions } from "@/lib/db/schema";
 import { countRecentActivity, logActivity } from "@/lib/services/activity";
 import { raiseFraudSignal } from "@/lib/services/fraud";
 import { getStripe, PLATFORM_FEE_BPS } from "@/lib/stripe";
@@ -138,6 +138,8 @@ export async function createListing(
       })
       .returning({ id: listings.id });
 
+    const followers = await db.select({ followerId: creatorFollows.followerId }).from(creatorFollows).where(eq(creatorFollows.creatorId, userId));
+    if (followers.length) await db.insert(notifications).values(followers.map((follower) => ({ userId: follower.followerId, title: "New creator release", body: data.title + " is now available.", href: "/marketplace/" + listing.id })));
     await logActivity(userId, "listing_created", { listingId: listing.id });
     revalidatePath("/marketplace");
     revalidatePath("/dashboard/seller");
@@ -227,6 +229,14 @@ export async function updateListing(
       })
       .where(eq(listings.id, listing.id));
 
+    if (data.priceCents < listing.priceCents) {
+      const alertSubscribers = await db.select({ userId: priceAlerts.userId }).from(priceAlerts).where(eq(priceAlerts.listingId, listing.id));
+      if (alertSubscribers.length) await db.insert(notifications).values(alertSubscribers.map((subscriber) => ({ userId: subscriber.userId, title: "A saved offer dropped in price", body: listing.title + " is now available for less.", href: "/marketplace/" + listing.id })));
+    }
+    if (data.deliveryInstructions !== listing.deliveryInstructions || data.deliveryFilePaths.join("|") !== listing.deliveryFilePaths.join("|")) {
+      const buyers = await db.select({ buyerId: transactions.buyerId }).from(transactions).where(and(eq(transactions.listingId, listing.id), eq(transactions.status, "paid")));
+      if (buyers.length) await db.insert(notifications).values(buyers.map((buyer) => ({ userId: buyer.buyerId, title: "Your purchase has an access update", body: listing.title + " has updated delivery or access details.", href: "/inventory" })));
+    }
     revalidatePath("/marketplace");
     revalidatePath("/marketplace/" + listing.id);
     revalidatePath("/marketplace/" + listing.id + "/edit");
