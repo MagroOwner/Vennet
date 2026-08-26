@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   if (!usage.allowed) return NextResponse.json({ error: "You have used all " + WEEKLY_AI_REQUEST_LIMIT + " Vennet AI requests for this week. Your allowance resets next week.", remaining: 0 }, { status: 429 });
 
   try {
-    const model = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+    const model = process.env.GEMINI_MODEL ?? "gemini-3.6-flash";
     const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {
       method: "POST",
       headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
