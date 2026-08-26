@@ -37,7 +37,7 @@ export function MarketplaceGrid({ listings, heading = "Explore offers", savedLis
     return [...enrichedListings]
       .filter((listing) => !term || [listing.title, listing.description, listing.collection ?? "", ...(listing.tags ?? [])].join(" ").toLowerCase().includes(term))
       .filter((listing) => !selectedCollection || collectionMatchesListing(selectedCollection, listing))
-      .filter((listing) => !license || listing.licenseType?.toLowerCase() === license)
+      .filter((listing) => !license || listing.licenseType?.toLowerCase().includes(license))
       .filter((listing) => !delivery || (listing.deliveryTime ?? "").toLowerCase().includes(delivery))
       .filter((listing) => {
         if (price === "under-25") return listing.priceCents < 2500;
