@@ -1,12 +1,12 @@
 "use server";
 
-import { and, count, eq, ne } from "drizzle-orm";
+import { and, count, eq, inArray, ne } from "drizzle-orm";
 import { ActionError, failure } from "@/lib/action-error";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { cartItems, creatorFollows, identities, listings, notifications, priceAlerts, sellerCoupons, stripeAccounts, transactions } from "@/lib/db/schema";
+import { cartItems, creatorFollows, identities, listings, notificationPreferences, notifications, priceAlerts, sellerCoupons, stripeAccounts, transactions } from "@/lib/db/schema";
 import { countRecentActivity, logActivity } from "@/lib/services/activity";
 import { raiseFraudSignal } from "@/lib/services/fraud";
 import { getStripe, PLATFORM_FEE_BPS } from "@/lib/stripe";
@@ -139,7 +139,9 @@ export async function createListing(
       .returning({ id: listings.id });
 
     const followers = await db.select({ followerId: creatorFollows.followerId }).from(creatorFollows).where(eq(creatorFollows.creatorId, userId));
-    if (followers.length) await db.insert(notifications).values(followers.map((follower) => ({ userId: follower.followerId, title: "New creator release", body: data.title + " is now available.", href: "/marketplace/" + listing.id })));
+    const followerPrefs = followers.length ? await db.select().from(notificationPreferences).where(inArray(notificationPreferences.userId, followers.map((follower) => follower.followerId))) : [];
+    const releaseRecipients = followers.filter((follower) => followerPrefs.find((pref) => pref.userId === follower.followerId)?.creatorReleases !== false);
+    if (releaseRecipients.length) await db.insert(notifications).values(releaseRecipients.map((follower) => ({ userId: follower.followerId, title: "New creator release", body: data.title + " is now available.", href: "/marketplace/" + listing.id })));
     await logActivity(userId, "listing_created", { listingId: listing.id });
     revalidatePath("/marketplace");
     revalidatePath("/dashboard/seller");
@@ -231,7 +233,9 @@ export async function updateListing(
 
     if (data.priceCents < listing.priceCents) {
       const alertSubscribers = await db.select({ userId: priceAlerts.userId }).from(priceAlerts).where(eq(priceAlerts.listingId, listing.id));
-      if (alertSubscribers.length) await db.insert(notifications).values(alertSubscribers.map((subscriber) => ({ userId: subscriber.userId, title: "A saved offer dropped in price", body: listing.title + " is now available for less.", href: "/marketplace/" + listing.id })));
+      const alertPrefs = alertSubscribers.length ? await db.select().from(notificationPreferences).where(inArray(notificationPreferences.userId, alertSubscribers.map((subscriber) => subscriber.userId))) : [];
+      const priceRecipients = alertSubscribers.filter((subscriber) => alertPrefs.find((pref) => pref.userId === subscriber.userId)?.priceDrops !== false);
+      if (priceRecipients.length) await db.insert(notifications).values(priceRecipients.map((subscriber) => ({ userId: subscriber.userId, title: "A saved offer dropped in price", body: listing.title + " is now available for less.", href: "/marketplace/" + listing.id })));
     }
     if (data.deliveryInstructions !== listing.deliveryInstructions || data.deliveryFilePaths.join("|") !== listing.deliveryFilePaths.join("|")) {
       const buyers = await db.select({ buyerId: transactions.buyerId }).from(transactions).where(and(eq(transactions.listingId, listing.id), eq(transactions.status, "paid")));
