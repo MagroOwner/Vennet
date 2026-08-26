@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 import { BrandMark } from "@/components/BrandMark";
 
 const categories = [
@@ -16,7 +18,9 @@ const reasons = [
   ["Protected checkout", "Pay securely through Stripe, with details and support in one place."],
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth();
+  if (!session) redirect("/login?next=/");
   return <div className="space-y-8 pb-7">
     <section className="relative overflow-hidden rounded-[2rem] bg-slate-950 px-7 py-10 text-white shadow-2xl shadow-slate-950/20 sm:px-10 lg:px-14 lg:py-14">
       <div className="absolute -right-28 -top-28 h-96 w-96 rounded-full bg-emerald-400/25 blur-3xl" />
