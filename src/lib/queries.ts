@@ -1,12 +1,17 @@
 import { and, desc, eq, inArray, or } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
+  creatorFollows,
   disputes,
   fraudSignals,
   identities,
+  listingReviews,
   listings,
+  notifications,
+  purchaseMessages,
   reputationLogs,
   reputationScores,
+  savedListings,
   roles,
   stripeAccounts,
   transactions,
@@ -162,4 +167,32 @@ export async function getFraudSignals(max = 100): Promise<FraudSignal[]> {
     .from(fraudSignals)
     .orderBy(desc(fraudSignals.createdAt))
     .limit(max);
+}
+
+
+export async function getSavedListings(userId: string): Promise<Listing[]> {
+  const rows = await db
+    .select({ listing: listings })
+    .from(savedListings)
+    .innerJoin(listings, eq(savedListings.listingId, listings.id))
+    .where(eq(savedListings.userId, userId))
+    .orderBy(desc(savedListings.createdAt));
+  return rows.map((row) => row.listing);
+}
+
+export async function getListingReviews(listingId: string) {
+  return db.select().from(listingReviews).where(and(eq(listingReviews.listingId, listingId), eq(listingReviews.hidden, false))).orderBy(desc(listingReviews.createdAt));
+}
+
+export async function getCreatorFollowerCount(creatorId: string): Promise<number> {
+  const rows = await db.select({ followerId: creatorFollows.followerId }).from(creatorFollows).where(eq(creatorFollows.creatorId, creatorId));
+  return rows.length;
+}
+
+export async function getUnreadNotifications(userId: string) {
+  return db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt)).limit(20);
+}
+
+export async function getPurchaseMessages(transactionId: string) {
+  return db.select().from(purchaseMessages).where(eq(purchaseMessages.transactionId, transactionId)).orderBy(purchaseMessages.createdAt);
 }
