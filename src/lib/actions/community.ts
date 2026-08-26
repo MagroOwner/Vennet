@@ -6,7 +6,7 @@ import { z } from "zod";
 import { ActionError, failure } from "@/lib/action-error";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { creatorFollows, listingReviews, purchaseMessages, savedListings, sellerCoupons, transactions } from "@/lib/db/schema";
+import { creatorFollows, listingReviews, purchaseMessages, referralCodes, savedListings, sellerCoupons, transactions } from "@/lib/db/schema";
 import type { ActionResult } from "@/lib/types";
 
 export async function toggleSavedListing(listingId: string): Promise<ActionResult<{ saved: boolean }>> {
@@ -76,5 +76,17 @@ export async function createSellerCoupon(input: z.input<typeof couponSchema>): P
     await db.insert(sellerCoupons).values({ sellerId: userId, code: data.code, discountPercent: data.discountPercent });
     revalidatePath("/dashboard/seller");
     return { ok: true };
+  } catch (error) { return failure(error); }
+}
+
+export async function createReferralCode(): Promise<ActionResult<{ code: string }>> {
+  try {
+    const { userId } = await requireAuth();
+    const [existing] = await db.select().from(referralCodes).where(eq(referralCodes.userId, userId)).limit(1);
+    if (existing) return { ok: true, code: existing.code };
+    const code = "VEN-" + crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
+    await db.insert(referralCodes).values({ userId, code });
+    revalidatePath("/dashboard/seller");
+    return { ok: true, code };
   } catch (error) { return failure(error); }
 }
