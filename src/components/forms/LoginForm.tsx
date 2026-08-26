@@ -78,7 +78,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
     setNotice(null);
     setBusy(true);
     try {
-      const result = await beginRegistration({ email, password });
+      const result = await beginRegistration({ email, password, referralCode });
       if (!result.ok) {
         setError(result.error);
         return;
