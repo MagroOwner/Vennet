@@ -3,6 +3,7 @@
 import { compare, hash } from "bcryptjs";
 import { and, eq, gt } from "drizzle-orm";
 import { randomInt } from "crypto";
+import { connect } from "tls";
 import { z } from "zod";
 import { ActionError, failure } from "@/lib/action-error";
 import { db } from "@/lib/db";
@@ -21,28 +22,70 @@ const confirmEmailSchema = z.object({
 });
 
 function createCode() {
-  return randomInt(100000, 1_000_000).toString();
+  return randomInt(100async function readSmtpResponse(socket: ReturnType<typeof connect>): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let response = "";
+    const timeout = setTimeout(() => reject(new Error("Timed out connecting to Gmail.")), 15_000);
+    const onData = (chunk: Buffer) => {
+      response += chunk.toString("utf8");
+      if (/^\d{3} /m.test(response)) {
+        clearTimeout(timeout);
+        socket.off("error", onError);
+        resolve(response);
+      }
+    };
+    const onError = (error: Error) => {
+      clearTimeout(timeout);
+      socket.off("data", onData);
+      reject(error);
+    };
+    socket.once("error", onError);
+    socket.on("data", onData);
+  });
+}
+
+async function smtpCommand(socket: ReturnType<typeof connect>, command: string) {
+  socket.write(command + "\r\n");
+  const response = await readSmtpResponse(socket);
+  if (!/^2\d\d|^3\d\d/m.test(response)) throw new Error("Gmail rejected a verification email.");
 }
 
 async function sendVerificationEmail(email: string, code: string) {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM;
-  if (!apiKey || !from) {
-    throw new ActionError("Email verification is not configured yet. Add RESEND_API_KEY and EMAIL_FROM in Vercel.");
+  const gmailUser = process.env.GMAIL_USER;
+  const appPassword = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, "");
+  if (!gmailUser || !appPassword) {
+    throw new ActionError("Email verification is not configured yet. Add GMAIL_USER and GMAIL_APP_PASSWORD in Vercel.");
   }
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      from,
-      to: [email],
-      subject: "Your Vennet verification code",
-      html: `<div style="font-family:Arial,sans-serif;color:#0f172a"><h1>Verify your Vennet email</h1><p>Enter this code to finish creating your account:</p><p style="font-size:32px;font-weight:800;letter-spacing:6px">${code}</p><p>This code expires in 15 minutes. If you did not request it, you can ignore this email.</p></div>`,
-    }),
-    cache: "no-store",
-  });
-  if (!response.ok) throw new ActionError("We could not send the verification email. Please try again shortly.");
+  const socket = connect({ host: "smtp.gmail.com", port: 465, secure: true });
+  try {
+    const greeting = await readSmtpResponse(socket);
+    if (!/^220/m.test(greeting)) throw new Error("Gmail did not accept the connection.");
+    await smtpCommand(socket, "EHLO vennetofficial.vercel.app");
+    await smtpCommand(socket, "AUTH PLAIN " + Buffer.from("\u0000" + gmailUser + "\u0000" + appPassword).toString("base64"));
+    await smtpCommand(socket, "MAIL FROM:<" + gmailUser + ">");
+    await smtpCommand(socket, "RCPT TO:<" + email + ">");
+    await smtpCommand(socket, "DATA");
+    const message = [
+      "From: Vennet <" + gmailUser + ">",
+      "To: " + email,
+      "Subject: Your Vennet verification code",
+      "MIME-Version: 1.0",
+      "Content-Type: text/plain; charset=utf-8",
+      "",
+      "Verify your Vennet email",
+      "",
+      "Enter this code to finish creating your account: " + code,
+      "",
+      "This code expires in 15 minutes. If you did not request it, you can ignore this email.",
+      ".",
+    ].join("\r\n");
+    await smtpCommand(socket, message);
+    socket.end("QUIT\r\n");
+  } catch {
+    socket.destroy();
+    throw new ActionError("We could not send the verification email. Please try again shortly.");
+  }
 }
 
 export async function beginRegistration(
