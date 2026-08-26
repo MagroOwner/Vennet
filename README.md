@@ -4,6 +4,7 @@ Identity, reputation, marketplace, verification, dispute, and fraud-detection pl
 single Next.js 14 App Router app that deploys to Vercel.
 
 > Production deployment trigger: the main branch is the source of the Vercel Production deployment.
+> Latest production deployment trigger: August 25, 2026.
 
 ## Stack
 
