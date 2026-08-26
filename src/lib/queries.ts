@@ -214,3 +214,12 @@ export async function getReferralStats(userId: string): Promise<{ signUps: numbe
   const rows = await db.select().from(referrals).where(eq(referrals.referrerId, userId));
   return { signUps: rows.length, qualified: rows.filter((row) => row.status === "qualified").length, rewardCents: rows.reduce((total, row) => total + row.rewardCents, 0) };
 }
+
+export async function getFeaturedCreators(max = 6): Promise<Identity[]> {
+  return db.select().from(identities).orderBy(desc(identities.reputationScore), desc(identities.createdAt)).limit(max);
+}
+
+export async function getListingSaveCount(listingId: string): Promise<number> {
+  const rows = await db.select({ userId: savedListings.userId }).from(savedListings).where(eq(savedListings.listingId, listingId));
+  return rows.length;
+}
