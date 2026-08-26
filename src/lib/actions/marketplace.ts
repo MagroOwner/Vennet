@@ -40,6 +40,11 @@ const createListingSchema = z.object({
     .default([]),
   deliveryInstructions: z.string().trim().min(10, "Explain how the buyer will access their purchase.").max(5000),
   supportContact: z.string().trim().min(3, "Provide a support email, link, or contact method.").max(500),
+  previewUrl: z.string().trim().url("Use a full preview URL.").max(2048).or(z.literal("")).default(""),
+  collection: z.string().trim().max(80).default(""),
+  tags: z.array(z.string().trim().min(1).max(32)).max(8).default([]),
+  licenseType: z.string().trim().min(3).max(80).default("Personal use"),
+  deliveryTime: z.string().trim().min(3).max(120).default("Available after payment"),
 });
 
 export async function createListing(
@@ -116,6 +121,11 @@ export async function createListing(
         deliveryFilePaths: data.deliveryFilePaths,
         deliveryInstructions: data.deliveryInstructions,
         supportContact: data.supportContact,
+        previewUrl: data.previewUrl,
+        collection: data.collection,
+        tags: data.tags,
+        licenseType: data.licenseType,
+        deliveryTime: data.deliveryTime,
         status: "active",
       })
       .returning({ id: listings.id });
@@ -196,6 +206,11 @@ export async function updateListing(
         deliveryFilePaths: data.deliveryFilePaths,
         deliveryInstructions: data.deliveryInstructions,
         supportContact: data.supportContact,
+        previewUrl: data.previewUrl,
+        collection: data.collection,
+        tags: data.tags,
+        licenseType: data.licenseType,
+        deliveryTime: data.deliveryTime,
         updatedAt: new Date(),
       })
       .where(eq(listings.id, listing.id));
