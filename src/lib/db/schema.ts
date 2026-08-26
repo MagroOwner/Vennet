@@ -218,6 +218,13 @@ export const listings = pgTable(
     deliveryFilePaths: jsonb("delivery_file_paths").$type<string[]>().notNull().default([]),
     deliveryInstructions: text("delivery_instructions").notNull().default(""),
     supportContact: text("support_contact").notNull().default(""),
+    previewUrl: text("preview_url").notNull().default(""),
+    collection: text("collection").notNull().default(""),
+    tags: jsonb("tags").$type<string[]>().notNull().default([]),
+    licenseType: text("license_type").notNull().default("Personal use"),
+    deliveryTime: text("delivery_time").notNull().default("Available after payment"),
+    viewCount: integer("view_count").notNull().default(0),
+    featured: boolean("featured").notNull().default(false),
     status: listingStatusEnum("status").notNull().default("active"),
     purchaseCount: integer("purchase_count").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -231,6 +238,101 @@ export const listings = pgTable(
     ),
     sellerIdx: index("listings_seller_idx").on(table.sellerId, table.createdAt),
   })
+);
+
+export const savedListings = pgTable(
+  "saved_listings",
+  {
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    listingId: uuid("listing_id").notNull().references(() => listings.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    savedIdx: uniqueIndex("saved_listings_user_listing_idx").on(table.userId, table.listingId),
+    listingIdx: index("saved_listings_listing_idx").on(table.listingId),
+  })
+);
+
+export const creatorFollows = pgTable(
+  "creator_follows",
+  {
+    followerId: uuid("follower_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    creatorId: uuid("creator_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    followIdx: uniqueIndex("creator_follows_follower_creator_idx").on(table.followerId, table.creatorId),
+    creatorIdx: index("creator_follows_creator_idx").on(table.creatorId),
+  })
+);
+
+export const listingReviews = pgTable(
+  "listing_reviews",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    transactionId: uuid("transaction_id").notNull().references(() => transactions.id, { onDelete: "cascade" }),
+    listingId: uuid("listing_id").notNull().references(() => listings.id, { onDelete: "cascade" }),
+    buyerId: uuid("buyer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    sellerId: uuid("seller_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    rating: integer("rating").notNull(),
+    body: text("body").notNull().default(""),
+    hidden: boolean("hidden").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    transactionIdx: uniqueIndex("listing_reviews_transaction_idx").on(table.transactionId),
+    listingIdx: index("listing_reviews_listing_idx").on(table.listingId, table.createdAt),
+  })
+);
+
+export const purchaseMessages = pgTable(
+  "purchase_messages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    transactionId: uuid("transaction_id").notNull().references(() => transactions.id, { onDelete: "cascade" }),
+    senderId: uuid("sender_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({ transactionIdx: index("purchase_messages_transaction_idx").on(table.transactionId, table.createdAt) })
+);
+
+export const sellerCoupons = pgTable(
+  "seller_coupons",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sellerId: uuid("seller_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    code: text("code").notNull(),
+    discountPercent: integer("discount_percent").notNull(),
+    active: boolean("active").notNull().default(true),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({ sellerCodeIdx: uniqueIndex("seller_coupons_seller_code_idx").on(table.sellerId, table.code) })
+);
+
+export const referralCodes = pgTable(
+  "referral_codes",
+  {
+    userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+    code: text("code").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({ codeIdx: uniqueIndex("referral_codes_code_idx").on(table.code) })
+);
+
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    body: text("body").notNull().default(""),
+    href: text("href").notNull().default(""),
+    read: boolean("read").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({ userIdx: index("notifications_user_idx").on(table.userId, table.createdAt) })
 );
 
 export const listingImages = pgTable("listing_images", {
