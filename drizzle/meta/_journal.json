@@ -36,6 +36,13 @@
       "when": 1787680800000,
       "tag": "0004_ai_weekly_usage",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787763600000,
+      "tag": "0005_marketplace_conversion",
+      "breakpoints": true
     }
   ]
 }
