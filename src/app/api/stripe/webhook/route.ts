@@ -1,8 +1,8 @@
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { db } from "@/lib/db";
-import { identities, stripeAccounts, transactions, users } from "@/lib/db/schema";
+import { cartItems, identities, stripeAccounts, transactions, users } from "@/lib/db/schema";
 import { completeTransaction } from "@/lib/services/transactions";
 import { getStripe } from "@/lib/stripe";
 
@@ -56,8 +56,11 @@ export async function POST(request: Request): Promise<NextResponse> {
     switch (event.type) {
       case "payment_intent.succeeded": {
         const intent = event.data.object;
-        const transactionId = intent.metadata?.transactionId;
-        if (transactionId) await completeTransaction(transactionId);
+        const transactionIds = (intent.metadata?.transactionIds ?? intent.metadata?.transactionId ?? "").split(",").filter(Boolean);
+        for (const transactionId of transactionIds) await completeTransaction(transactionId);
+        const buyerId = intent.metadata?.buyerId;
+        const listingIds = intent.metadata?.listingIds?.split(",").filter(Boolean) ?? [];
+        if (buyerId && listingIds.length) await db.delete(cartItems).where(and(eq(cartItems.userId, buyerId), inArray(cartItems.listingId, listingIds)));
         break;
       }
       case "payment_intent.payment_failed":
