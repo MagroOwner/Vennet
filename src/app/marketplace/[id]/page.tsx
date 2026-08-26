@@ -7,6 +7,7 @@ import { ReviewReplyForm } from "@/components/ReviewReplyForm";
 import { RecentlyViewedTracker } from "@/components/RecentlyViewedTracker";
 import { ListingCard } from "@/components/ListingCard";
 import { BuyButton } from "@/components/forms/BuyButton";
+import { CartButton } from "@/components/CartButton";
 import { auth } from "@/lib/auth";
 import { getActiveListings, getIdentity, getListing, getListingReviews, getReputationScore } from "@/lib/queries";
 import { levelForScore } from "@/lib/services/reputation";
@@ -60,7 +61,7 @@ export default async function ListingPage({ params }: { params: { id: string } }
           {listingDetails.tags?.length ? <div className="mt-5 flex flex-wrap gap-2">{listingDetails.tags.map((tag) => <span key={tag} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">#{tag}</span>)}</div> : null}
           <div className="mt-5 grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm sm:grid-cols-2">{listingDetails.fileType && <div><p className="font-black text-slate-900">File format</p><p className="mt-1 text-slate-600">{listingDetails.fileType}</p></div>}{listingDetails.compatibility && <div><p className="font-black text-slate-900">Compatibility</p><p className="mt-1 text-slate-600">{listingDetails.compatibility}</p></div>}{listingDetails.includesUpdates && <div className="sm:col-span-2"><p className="font-black text-slate-900">Included updates</p><p className="mt-1 text-slate-600">{listingDetails.updatePolicy || "This offer includes future updates from the creator."}</p></div>}</div>
 
-          <div className="mt-7">{isOwnListing ? <Link href={"/marketplace/" + listing.id + "/edit"} className="flex w-full justify-center rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition hover:bg-slate-800">Edit this listing</Link> : <BuyButton listingId={listing.id} available={listing.status === "active"} signedIn={Boolean(session?.user?.id)} />}</div>
+          <div className="mt-7">{isOwnListing ? <Link href={"/marketplace/" + listing.id + "/edit"} className="flex w-full justify-center rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition hover:bg-slate-800">Edit this listing</Link> : <div className="space-y-3"><BuyButton listingId={listing.id} available={listing.status === "active"} signedIn={Boolean(session?.user?.id)} /><CartButton listingId={listing.id} signedIn={Boolean(session?.user?.id)} /></div>}</div>
           <p className="mt-3 text-center text-xs leading-5 text-slate-500">Secure Stripe checkout. Your order, access details, and seller support appear in Inventory.</p>
         </section>
       </div>
