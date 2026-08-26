@@ -30,6 +30,7 @@ function createCode() {
       response += chunk.toString("utf8");
       if (/^\d{3} /m.test(response)) {
         clearTimeout(timeout);
+        socket.off("data", onData);
         socket.off("error", onError);
         resolve(response);
       }
