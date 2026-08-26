@@ -8,6 +8,7 @@ import type { Listing } from "@/lib/types";
 
 type DisplaySize = "small" | "medium" | "large";
 type Sort = "newest" | "price-low" | "price-high" | "popular";
+type ListingTrust = { averageRating: number | null; reviewCount: number; sellerVerified: boolean };
 type MarketplaceListing = Listing & { collection?: string | null; licenseType?: string | null; deliveryTime?: string | null; tags?: string[] | null; fileType?: string | null; compatibility?: string | null; includesUpdates?: boolean | null };
 
 const gridClasses: Record<DisplaySize, string> = {
@@ -16,7 +17,7 @@ const gridClasses: Record<DisplaySize, string> = {
   large: "grid gap-6 md:grid-cols-2",
 };
 
-export function MarketplaceGrid({ listings, heading = "Explore offers", savedListingIds = [], initialCollection = "" }: { listings: Listing[]; heading?: string; savedListingIds?: string[]; initialCollection?: string }) {
+export function MarketplaceGrid({ listings, heading = "Explore offers", savedListingIds = [], initialCollection = "", trustByListing = {} }: { listings: Listing[]; heading?: string; savedListingIds?: string[]; initialCollection?: string; trustByListing?: Record<string, ListingTrust> }) {
   const [size, setSize] = useState<DisplaySize>("medium");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<Sort>("newest");
@@ -27,6 +28,8 @@ export function MarketplaceGrid({ listings, heading = "Explore offers", savedLis
   const [fileType, setFileType] = useState("");
   const [compatibility, setCompatibility] = useState("");
   const [updatesOnly, setUpdatesOnly] = useState(false);
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [minimumRating, setMinimumRating] = useState("");
   const enrichedListings = listings as MarketplaceListing[];
 
   useEffect(() => {
@@ -45,6 +48,8 @@ export function MarketplaceGrid({ listings, heading = "Explore offers", savedLis
       .filter((listing) => !fileType || (listing.fileType ?? "").toLowerCase().includes(fileType))
       .filter((listing) => !compatibility || (listing.compatibility ?? "").toLowerCase().includes(compatibility))
       .filter((listing) => !updatesOnly || Boolean(listing.includesUpdates))
+      .filter((listing) => !verifiedOnly || Boolean(trustByListing[listing.id]?.sellerVerified))
+      .filter((listing) => !minimumRating || (trustByListing[listing.id]?.averageRating ?? 0) >= Number(minimumRating))
       .filter((listing) => {
         if (price === "under-25") return listing.priceCents < 2500;
         if (price === "25-100") return listing.priceCents >= 2500 && listing.priceCents <= 10000;
@@ -57,7 +62,7 @@ export function MarketplaceGrid({ listings, heading = "Explore offers", savedLis
         if (sort === "popular") return b.purchaseCount - a.purchaseCount;
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
-  }, [enrichedListings, query, sort, collection, license, delivery, price, fileType, compatibility, updatesOnly]);
+  }, [enrichedListings, query, sort, collection, license, delivery, price, fileType, compatibility, updatesOnly, verifiedOnly, minimumRating, trustByListing]);
 
   function chooseSize(nextSize: DisplaySize) {
     setSize(nextSize);
@@ -73,6 +78,8 @@ export function MarketplaceGrid({ listings, heading = "Explore offers", savedLis
     setFileType("");
     setCompatibility("");
     setUpdatesOnly(false);
+    setVerifiedOnly(false);
+    setMinimumRating("");
   }
 
   return (
@@ -94,10 +101,10 @@ export function MarketplaceGrid({ listings, heading = "Explore offers", savedLis
           <select aria-label="File type" value={fileType} onChange={(event) => setFileType(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800"><option value="">Any format</option><option value="zip">ZIP</option><option value="pdf">PDF</option><option value="figma">Figma</option><option value="mp3">MP3</option><option value="video">Video</option></select>
           <select aria-label="Compatibility" value={compatibility} onChange={(event) => setCompatibility(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800"><option value="">Any compatibility</option><option value="mac">Mac</option><option value="windows">Windows</option><option value="notion">Notion</option><option value="figma">Figma</option><option value="canva">Canva</option></select>
         </div>
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><label className="inline-flex items-center gap-2 text-sm font-bold text-slate-700"><input type="checkbox" checked={updatesOnly} onChange={(event) => setUpdatesOnly(event.target.checked)} className="h-4 w-4 accent-emerald-600" /> Includes future updates</label><p className="text-xs font-medium text-slate-500">Filter by format, compatibility, license, delivery, and price.</p><button type="button" onClick={clearFilters} className="text-sm font-bold text-emerald-800 hover:text-emerald-950">Clear filters</button></div>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-3"><label className="inline-flex items-center gap-2 text-sm font-bold text-slate-700"><input type="checkbox" checked={updatesOnly} onChange={(event) => setUpdatesOnly(event.target.checked)} className="h-4 w-4 accent-emerald-600" /> Includes future updates</label><label className="inline-flex items-center gap-2 text-sm font-bold text-slate-700"><input type="checkbox" checked={verifiedOnly} onChange={(event) => setVerifiedOnly(event.target.checked)} className="h-4 w-4 accent-emerald-600" /> Verified sellers</label><select aria-label="Minimum rating" value={minimumRating} onChange={(event) => setMinimumRating(event.target.value)} className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold text-slate-800"><option value="">Any rating</option><option value="4">4★ & up</option><option value="4.5">4.5★ & up</option></select></div><p className="text-xs font-medium text-slate-500">Filter by format, compatibility, license, delivery, and price.</p><button type="button" onClick={clearFilters} className="text-sm font-bold text-emerald-800 hover:text-emerald-950">Clear filters</button></div>
       </div>
 
-      {visibleListings.length === 0 ? <div className="mt-5 rounded-3xl border border-slate-200 bg-white/80 p-10 text-center shadow-sm"><p className="text-lg font-bold text-slate-950">Nothing matches those filters yet.</p><p className="mt-2 text-sm text-slate-600">Try a broader search or discover another collection.</p><div className="mt-5 flex justify-center gap-3"><button type="button" onClick={clearFilters} className="button-primary">Clear filters</button><Link href="/collections" className="button-secondary">Browse collections</Link></div></div> : <div className={"mt-5 " + gridClasses[size]}>{visibleListings.map((listing, index) => <div key={listing.id} className="animate-rise" style={{ animationDelay: Math.min(index * 55, 440) + "ms" }}><ListingCard listing={listing} size={size} saved={savedListingIds.includes(listing.id)} /></div>)}</div>}
+      {visibleListings.length === 0 ? <div className="mt-5 rounded-3xl border border-slate-200 bg-white/80 p-10 text-center shadow-sm"><p className="text-lg font-bold text-slate-950">Nothing matches those filters yet.</p><p className="mt-2 text-sm text-slate-600">Try a broader search or discover another collection.</p><div className="mt-5 flex justify-center gap-3"><button type="button" onClick={clearFilters} className="button-primary">Clear filters</button><Link href="/collections" className="button-secondary">Browse collections</Link></div></div> : <div className={"mt-5 " + gridClasses[size]}>{visibleListings.map((listing, index) => <div key={listing.id} className="animate-rise" style={{ animationDelay: Math.min(index * 55, 440) + "ms" }}><ListingCard listing={listing} size={size} saved={savedListingIds.includes(listing.id)} verifiedSeller={trustByListing[listing.id]?.sellerVerified} rating={trustByListing[listing.id]?.averageRating ? { average: trustByListing[listing.id].averageRating as number, count: trustByListing[listing.id].reviewCount } : null} /></div>)}</div>}
     </>
   );
 }
