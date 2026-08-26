@@ -6,13 +6,14 @@ import { randomInt } from "crypto";
 import { z } from "zod";
 import { ActionError, failure } from "@/lib/action-error";
 import { db } from "@/lib/db";
-import { emailVerificationTokens, roles, users } from "@/lib/db/schema";
+import { emailVerificationTokens, referralCodes, referrals, roles, users } from "@/lib/db/schema";
 import type { ActionResult } from "@/lib/types";
 
 const signUpSchema = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email address."),
   password: z.string().min(8, "Password must be at least 8 characters.").max(200),
   displayName: z.string().trim().max(80).default(""),
+  referralCode: z.string().trim().toUpperCase().max(32).default(""),
 });
 
 const confirmEmailSchema = z.object({
@@ -75,6 +76,7 @@ export async function beginRegistration(
         codeHash,
         expiresAt: new Date(Date.now() + 15 * 60_000),
         attempts: 0,
+        referralCode: data.referralCode,
         createdAt: new Date(),
       })
       .onConflictDoUpdate({
@@ -85,6 +87,7 @@ export async function beginRegistration(
           codeHash,
           expiresAt: new Date(Date.now() + 15 * 60_000),
           attempts: 0,
+          referralCode: data.referralCode,
           createdAt: new Date(),
         },
       });
@@ -124,6 +127,10 @@ export async function completeRegistration(
         .values({ email: pending.email, passwordHash: pending.passwordHash, displayName: pending.displayName, emailVerified: new Date() })
         .returning({ id: users.id });
       await tx.insert(roles).values({ userId: created.id, role: "user" });
+      if (pending.referralCode) {
+        const [referrer] = await tx.select({ userId: referralCodes.userId }).from(referralCodes).where(eq(referralCodes.code, pending.referralCode)).limit(1);
+        if (referrer && referrer.userId !== created.id) await tx.insert(referrals).values({ referrerId: referrer.userId, refereeId: created.id });
+      }
       await tx.delete(emailVerificationTokens).where(eq(emailVerificationTokens.email, data.email));
     });
     return { ok: true };
