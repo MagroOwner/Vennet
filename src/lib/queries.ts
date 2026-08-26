@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray, or } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
+  cartItems,
   creatorFollows,
   disputes,
   fraudSignals,
@@ -248,4 +249,9 @@ export async function getSellerBundles(sellerId: string) {
 export async function getBundle(id: string) {
   const [bundle] = await db.select().from(listingBundles).where(eq(listingBundles.id, id)).limit(1);
   return bundle ?? null;
+}
+
+export async function getCartListings(userId: string): Promise<Listing[]> {
+  const rows = await db.select({ listing: listings }).from(cartItems).innerJoin(listings, eq(cartItems.listingId, listings.id)).where(eq(cartItems.userId, userId)).orderBy(desc(cartItems.createdAt));
+  return rows.map((row) => row.listing);
 }
