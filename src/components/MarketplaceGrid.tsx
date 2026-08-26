@@ -18,14 +18,14 @@ const gridClasses: Record<DisplaySize, string> = {
   large: "grid gap-6 md:grid-cols-2",
 };
 
-export function MarketplaceGrid({ listings, heading = "Explore offers", savedListingIds = [], initialCollection = "", trustByListing = {} }: { listings: Listing[]; heading?: string; savedListingIds?: string[]; initialCollection?: string; trustByListing?: Record<string, ListingTrust> }) {
+export function MarketplaceGrid({ listings, heading = "Explore offers", savedListingIds = [], initialCollection = "", initialQuery = "", initialLicense = "", initialDelivery = "", initialPrice = "", trustByListing = {} }: { listings: Listing[]; heading?: string; savedListingIds?: string[]; initialCollection?: string; initialQuery?: string; initialLicense?: string; initialDelivery?: string; initialPrice?: string; trustByListing?: Record<string, ListingTrust> }) {
   const [size, setSize] = useState<DisplaySize>("medium");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [sort, setSort] = useState<Sort>("newest");
   const [collection, setCollection] = useState(initialCollection);
-  const [license, setLicense] = useState("");
-  const [delivery, setDelivery] = useState("");
-  const [price, setPrice] = useState("");
+  const [license, setLicense] = useState(initialLicense);
+  const [delivery, setDelivery] = useState(initialDelivery);
+  const [price, setPrice] = useState(initialPrice);
   const [fileType, setFileType] = useState("");
   const [compatibility, setCompatibility] = useState("");
   const [updatesOnly, setUpdatesOnly] = useState(false);
