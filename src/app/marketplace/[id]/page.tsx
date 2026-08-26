@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ReputationBadge, VerifiedBadge } from "@/components/Badges";
+import { SaveListingButton } from "@/components/SaveListingButton";
 import { BuyButton } from "@/components/forms/BuyButton";
 import { auth } from "@/lib/auth";
-import { getIdentity, getListing, getReputationScore } from "@/lib/queries";
+import { getIdentity, getListing, getListingReviews, getReputationScore } from "@/lib/queries";
 import { levelForScore } from "@/lib/services/reputation";
 import { formatPrice } from "@/lib/types";
 
@@ -13,76 +14,62 @@ export default async function ListingPage({ params }: { params: { id: string } }
   const listing = await getListing(params.id);
   if (!listing) notFound();
 
-  const [seller, sellerScore, session] = await Promise.all([
+  const [seller, sellerScore, session, reviews] = await Promise.all([
     getIdentity(listing.sellerId),
     getReputationScore(listing.sellerId),
     auth(),
+    getListingReviews(listing.id),
   ]);
   const isOwnListing = session?.user?.id === listing.sellerId;
+  const averageRating = reviews.length ? reviews.reduce((total, review) => total + review.rating, 0) / reviews.length : null;
+  const listingDetails = listing as typeof listing & { previewUrl?: string | null; licenseType?: string | null; deliveryTime?: string | null; tags?: string[] | null; collection?: string | null };
 
   return (
-    <div className="grid gap-8 lg:grid-cols-2">
-      <div className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900">
-        {listing.imageUrls[0] ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={listing.imageUrls[0]}
-            alt={listing.title}
-            className="w-full object-cover"
-          />
-        ) : (
-          <div className="flex aspect-video items-center justify-center text-zinc-600">
-            No image
-          </div>
-        )}
-        {listing.imageUrls.length > 1 && (
-          <div className="flex gap-2 p-2">
-            {listing.imageUrls.slice(1).map((url) => (
+    <main className="pb-12">
+      <Link href="/marketplace" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-emerald-700">← Back to marketplace</Link>
+      <div className="mt-5 grid gap-8 lg:grid-cols-[1.1fr_.9fr]">
+        <section>
+          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 shadow-2xl shadow-slate-900/15">
+            {listing.imageUrls[0] ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={url} src={url} alt="" className="h-16 w-16 rounded object-cover" />
-            ))}
+              <img src={listing.imageUrls[0]} alt={listing.title} className="aspect-[4/3] w-full object-cover" />
+            ) : (
+              <div className="grid aspect-[4/3] place-items-center bg-[radial-gradient(circle_at_50%_20%,rgba(52,211,153,.28),transparent_35%),linear-gradient(135deg,#1e293b,#020617)] text-7xl text-emerald-200">✦</div>
+            )}
           </div>
-        )}
+          {listing.imageUrls.length > 1 && <div className="mt-3 flex gap-3 overflow-x-auto pb-1">{listing.imageUrls.slice(1).map((url) => <div key={url} className="h-20 w-20 flex-none overflow-hidden rounded-xl border border-slate-200 bg-white">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={url} alt="" className="h-full w-full object-cover" /></div>)}</div>}
+          {listingDetails.previewUrl && <a href={listingDetails.previewUrl} target="_blank" rel="noreferrer" className="mt-5 flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-slate-900 transition hover:bg-emerald-100"><span><span className="block text-sm font-black">Try the preview</span><span className="mt-1 block text-sm text-slate-600">Open the seller’s sample, demo, or preview.</span></span><span className="text-lg text-emerald-700">↗</span></a>}
+        </section>
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5 sm:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-3"><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black capitalize tracking-wide text-slate-700">{listing.category}</span><SaveListingButton listingId={listing.id} /></div>
+          <h1 className="mt-5 text-4xl font-black leading-tight tracking-tight text-slate-950">{listing.title}</h1>
+          <div className="mt-5 flex items-end justify-between gap-4"><p className="text-3xl font-black text-emerald-700">{formatPrice(listing.priceCents, listing.currency)}</p>{averageRating && <p className="text-sm font-bold text-amber-600">★ {averageRating.toFixed(1)} <span className="font-medium text-slate-500">({reviews.length} reviews)</span></p>}</div>
+          <p className="mt-6 whitespace-pre-wrap text-base leading-7 text-slate-700">{listing.description}</p>
+
+          <div className="mt-7 grid grid-cols-2 gap-3 border-y border-slate-100 py-5 text-sm">
+            <div><p className="font-bold text-slate-900">Digital delivery</p><p className="mt-1 text-slate-600">{listingDetails.deliveryTime || "Access is provided after purchase"}</p></div>
+            <div><p className="font-bold text-slate-900">License</p><p className="mt-1 capitalize text-slate-600">{listingDetails.licenseType || "See seller details"}</p></div>
+          </div>
+          {listingDetails.tags?.length ? <div className="mt-5 flex flex-wrap gap-2">{listingDetails.tags.map((tag) => <span key={tag} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">#{tag}</span>)}</div> : null}
+
+          <div className="mt-7">
+            {isOwnListing ? <Link href={"/marketplace/" + listing.id + "/edit"} className="flex w-full justify-center rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition hover:bg-slate-800">Edit this listing</Link> : <BuyButton listingId={listing.id} available={listing.status === "active"} signedIn={Boolean(session?.user?.id)} />}
+          </div>
+          <p className="mt-3 text-center text-xs leading-5 text-slate-500">Secure Stripe checkout. Your order and delivery details will appear in Inventory.</p>
+        </section>
       </div>
 
-      <div>
-        <h1 className="text-3xl font-bold">{listing.title}</h1>
-        <p className="mt-2 text-2xl font-semibold text-emerald-400">
-          {formatPrice(listing.priceCents, listing.currency)}
-        </p>
-        <span className="mt-2 inline-block rounded bg-zinc-800 px-2 py-0.5 text-xs capitalize text-zinc-400">
-          {listing.category}
-        </span>
-        <p className="mt-4 whitespace-pre-wrap text-zinc-300">{listing.description}</p>
-
-        {seller && (
-          <Link
-            href={`/identity/${seller.userId}`}
-            className="mt-6 flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900 p-4 hover:border-emerald-600"
-          >
-            <div>
-              <p className="font-medium">{seller.name}</p>
-              <div className="mt-1 flex gap-2">
-                <VerifiedBadge status={seller.verificationStatus} />
-                <ReputationBadge
-                  score={seller.reputationScore}
-                  level={sellerScore?.level ?? levelForScore(seller.reputationScore)}
-                />
-              </div>
-            </div>
-          </Link>
-        )}
-
-        {isOwnListing ? (
-          <Link href={"/marketplace/" + listing.id + "/edit"} className="button-primary mt-6">Edit this listing</Link>
-        ) : (
-          <BuyButton
-            listingId={listing.id}
-            available={listing.status === "active"}
-            signedIn={Boolean(session?.user?.id)}
-          />
-        )}
-      </div>
-    </div>
+      <section className="mt-8 grid gap-6 lg:grid-cols-[.75fr_1.25fr]">
+        {seller && <Link href={"/identity/" + seller.userId} className="rounded-3xl bg-slate-900 p-6 text-white shadow-xl shadow-slate-900/15 transition hover:-translate-y-0.5">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-300">Sold by</p>
+          <div className="mt-4 flex items-center gap-3">{seller.avatarUrl ? <img src={seller.avatarUrl} alt="" className="h-12 w-12 rounded-2xl object-cover" /> : <div className="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-300 font-black text-slate-950">{seller.name.slice(0, 1).toUpperCase()}</div>}<div><p className="font-black">{seller.name}</p><div className="mt-2 flex flex-wrap gap-2"><VerifiedBadge status={seller.verificationStatus} /><ReputationBadge score={seller.reputationScore} level={sellerScore?.level ?? levelForScore(seller.reputationScore)} /></div></div></div>
+          <p className="mt-5 text-sm text-slate-300">Visit this creator’s storefront and explore more work →</p>
+        </Link>}
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5"><div className="flex items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Verified buyer reviews</p><h2 className="mt-1 text-2xl font-black text-slate-950">What customers say</h2></div>{averageRating && <span className="text-lg font-black text-amber-600">★ {averageRating.toFixed(1)}</span>}</div>
+          {reviews.length ? <div className="mt-5 space-y-4">{reviews.slice(0, 3).map((review) => <article key={review.id} className="rounded-2xl bg-slate-50 p-4"><p className="font-bold text-amber-600">{"★".repeat(review.rating)}<span className="text-slate-300">{"★".repeat(5 - review.rating)}</span></p>{review.body && <p className="mt-2 text-sm leading-6 text-slate-700">{review.body}</p>}<p className="mt-3 text-xs font-semibold text-slate-500">Verified Vennet purchase</p></article>)}</div> : <p className="mt-5 rounded-2xl bg-slate-50 p-5 text-sm leading-6 text-slate-600">No reviews yet. Reviews can only be written by verified buyers after a completed purchase.</p>}
+        </div>
+      </section>
+    </main>
   );
 }
