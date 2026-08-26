@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ReputationBadge, VerifiedBadge } from "@/components/Badges";
 import { SaveListingButton } from "@/components/SaveListingButton";
+import { PriceAlertButton } from "@/components/PriceAlertButton";
 import { ListingCard } from "@/components/ListingCard";
 import { BuyButton } from "@/components/forms/BuyButton";
 import { auth } from "@/lib/auth";
@@ -47,7 +48,7 @@ export default async function ListingPage({ params }: { params: { id: string } }
         </section>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5 sm:p-8">
-          <div className="flex flex-wrap items-center justify-between gap-3"><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black capitalize tracking-wide text-slate-700">{listing.category}</span><SaveListingButton listingId={listing.id} /></div>
+          <div className="flex flex-wrap items-center justify-between gap-3"><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black capitalize tracking-wide text-slate-700">{listing.category}</span><div className="flex flex-wrap gap-2"><SaveListingButton listingId={listing.id} /><PriceAlertButton listingId={listing.id} /></div></div>
           <h1 className="mt-5 text-4xl font-black leading-tight tracking-tight text-slate-950">{listing.title}</h1>
           <div className="mt-5 flex items-end justify-between gap-4"><p className="text-3xl font-black text-emerald-700">{formatPrice(listing.priceCents, listing.currency)}</p>{averageRating && <p className="text-sm font-bold text-amber-600">★ {averageRating.toFixed(1)} <span className="font-medium text-slate-500">({reviews.length} reviews)</span></p>}</div>
           <p className="mt-6 whitespace-pre-wrap text-base leading-7 text-slate-700">{listing.description}</p>
