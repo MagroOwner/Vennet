@@ -3,6 +3,8 @@
 Identity, reputation, marketplace, verification, dispute, and fraud-detection platform built as a
 single Next.js 14 App Router app that deploys to Vercel.
 
+> Production deployment trigger: the main branch is the source of the Vercel Production deployment.
+
 ## Stack
 
 | Concern     | Implementation                                        |
