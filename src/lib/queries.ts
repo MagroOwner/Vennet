@@ -12,6 +12,7 @@ import {
   reputationLogs,
   reputationScores,
   referralCodes,
+  referrals,
   savedListings,
   roles,
   stripeAccounts,
@@ -207,4 +208,9 @@ export async function getSavedListingIds(userId: string): Promise<string[]> {
 export async function getReferralCode(userId: string): Promise<string | null> {
   const [row] = await db.select({ code: referralCodes.code }).from(referralCodes).where(eq(referralCodes.userId, userId)).limit(1);
   return row?.code ?? null;
+}
+
+export async function getReferralStats(userId: string): Promise<{ signUps: number; qualified: number; rewardCents: number }> {
+  const rows = await db.select().from(referrals).where(eq(referrals.referrerId, userId));
+  return { signUps: rows.length, qualified: rows.filter((row) => row.status === "qualified").length, rewardCents: rows.reduce((total, row) => total + row.rewardCents, 0) };
 }
