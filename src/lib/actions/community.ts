@@ -1,12 +1,12 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ActionError, failure } from "@/lib/action-error";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { creatorFollows, listingReviews, notifications, priceAlerts, purchaseMessages, referralCodes, savedListings, sellerCoupons, transactions } from "@/lib/db/schema";
+import { creatorFollows, listingBundles, listingReviews, listings, notifications, priceAlerts, purchaseMessages, referralCodes, savedListings, sellerCoupons, transactions } from "@/lib/db/schema";
 import type { ActionResult } from "@/lib/types";
 
 export async function toggleSavedListing(listingId: string): Promise<ActionResult<{ saved: boolean }>> {
@@ -114,5 +114,18 @@ export async function replyToReview(input: z.input<typeof replySchema>): Promise
     await db.update(listingReviews).set({ sellerReply: data.reply, sellerRepliedAt: new Date() }).where(eq(listingReviews.id, review.id));
     revalidatePath("/marketplace/" + review.listingId);
     return { ok: true };
+  } catch (error) { return failure(error); }
+}
+
+const bundleSchema = z.object({ name: z.string().trim().min(3).max(100), description: z.string().trim().max(1000).default(""), listingIds: z.array(z.string().uuid()).min(2).max(6), discountPercent: z.number().int().min(5).max(60), expiresAt: z.string().datetime().optional() });
+export async function createSellerBundle(input: z.input<typeof bundleSchema>): Promise<ActionResult<{ bundleId: string }>> {
+  try {
+    const { userId } = await requireAuth();
+    const data = bundleSchema.parse(input);
+    const ownListings = await db.select({ id: listings.id }).from(listings).where(and(eq(listings.sellerId, userId), inArray(listings.id, data.listingIds), eq(listings.status, "active")));
+    if (ownListings.length !== data.listingIds.length) throw new ActionError("A bundle can only include your active listings.");
+    const [bundle] = await db.insert(listingBundles).values({ sellerId: userId, name: data.name, description: data.description, listingIds: data.listingIds, discountPercent: data.discountPercent, expiresAt: data.expiresAt ? new Date(data.expiresAt) : null }).returning({ id: listingBundles.id });
+    revalidatePath("/dashboard/seller");
+    return { ok: true, bundleId: bundle.id };
   } catch (error) { return failure(error); }
 }
