@@ -73,8 +73,9 @@ export const authOptions: NextAuthOptions = {
       }
       const [created] = await db
         .insert(users)
-        .values({ email, displayName: user.name ?? "", image: user.image ?? null })
+        .values({ email, displayName: user.name ?? "", image: user.image ?? null, emailVerified: new Date() })
         .returning();
+      await db.insert(roles).values({ userId: created.id, role: "user" }).onConflictDoNothing();
       user.id = created.id;
       return true;
     },
