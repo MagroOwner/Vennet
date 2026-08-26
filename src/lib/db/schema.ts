@@ -342,6 +342,36 @@ export const notifications = pgTable(
   (table) => ({ userIdx: index("notifications_user_idx").on(table.userId, table.createdAt) })
 );
 
+export const cartItems = pgTable(
+  "cart_items",
+  {
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    listingId: uuid("listing_id").notNull().references(() => listings.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({ cartIdx: uniqueIndex("cart_items_user_listing_idx").on(table.userId, table.listingId) })
+);
+
+export const notificationPreferences = pgTable("notification_preferences", {
+  userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  priceDrops: boolean("price_drops").notNull().default(true),
+  creatorReleases: boolean("creator_releases").notNull().default(true),
+  purchaseUpdates: boolean("purchase_updates").notNull().default(true),
+  productUpdates: boolean("product_updates").notNull().default(true),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const listingViewEvents = pgTable(
+  "listing_view_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    listingId: uuid("listing_id").notNull().references(() => listings.id, { onDelete: "cascade" }),
+    source: text("source").notNull().default("direct"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({ listingIdx: index("listing_view_events_listing_idx").on(table.listingId, table.createdAt) })
+);
+
 export const priceAlerts = pgTable(
   "price_alerts",
   {
