@@ -4,7 +4,7 @@ import { FollowCreatorButton } from "@/components/FollowCreatorButton";
 import { ReputationBadge, VerifiedBadge } from "@/components/Badges";
 import { ListingCard } from "@/components/ListingCard";
 import { auth } from "@/lib/auth";
-import { getCreatorFollowerCount, getIdentity, getReputationScore, getSellerListings } from "@/lib/queries";
+import { getCreatorFollowerCount, getIdentity, getReputationScore, getSales, getSellerListings } from "@/lib/queries";
 import { levelForScore } from "@/lib/services/reputation";
 
 export const dynamic = "force-dynamic";
@@ -13,11 +13,12 @@ export default async function IdentityPage({ params }: { params: { uid: string }
   const identity = await getIdentity(params.uid);
   if (!identity) notFound();
 
-  const [score, listings, followers, session] = await Promise.all([
+  const [score, listings, followers, session, sales] = await Promise.all([
     getReputationScore(identity.userId),
     getSellerListings(identity.userId),
     getCreatorFollowerCount(identity.userId),
     auth(),
+    getSales(identity.userId),
   ]);
   const activeListings = listings.filter((listing) => listing.status === "active");
   const isOwnProfile = session?.user?.id === identity.userId;
@@ -75,7 +76,7 @@ export default async function IdentityPage({ params }: { params: { uid: string }
           <div className="mt-6 grid grid-cols-2 gap-5">
             <div><p className="text-3xl font-black text-emerald-300">{activeListings.length}</p><p className="mt-1 text-sm text-slate-300">Live offers</p></div>
             <div><p className="text-3xl font-black text-emerald-300">{followers}</p><p className="mt-1 text-sm text-slate-300">Followers</p></div>
-            <div><p className="text-3xl font-black text-emerald-300">{score?.totalEvents ?? 0}</p><p className="mt-1 text-sm text-slate-300">Trust events</p></div>
+            <div><p className="text-3xl font-black text-emerald-300">{sales.filter((sale) => sale.status === "paid").length}</p><p className="mt-1 text-sm text-slate-300">Verified sales</p></div>
             <div><p className="text-lg font-black text-emerald-300">{profile.responseTimeHours ? "≈ " + profile.responseTimeHours + "h" : "—"}</p><p className="mt-1 text-sm text-slate-300">Response time</p></div>
           </div>
           <p className="mt-7 border-t border-white/10 pt-4 text-sm text-slate-300">Member since {identity.createdAt.toLocaleDateString()}</p>
