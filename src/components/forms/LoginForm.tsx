@@ -9,6 +9,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/dashboard";
+  const referralCode = searchParams.get("ref") ?? "";
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [signupStep, setSignupStep] = useState<"details" | "verify">("details");
   const [email, setEmail] = useState("");
@@ -44,7 +45,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
       }
 
       if (signupStep === "details") {
-        const result = await beginRegistration({ email, password });
+        const result = await beginRegistration({ email, password, referralCode });
         if (!result.ok) {
           setError(result.error);
           return;
