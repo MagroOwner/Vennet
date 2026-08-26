@@ -22,7 +22,7 @@ export async function consumeAiRequest(userId: string): Promise<{ allowed: boole
       OR ai_weekly_usage.requests_used < ${WEEKLY_AI_REQUEST_LIMIT}
     RETURNING requests_used
   `);
-  const row = result.rows[0];
+  const row = result[0];
   return row ? { allowed: true, remaining: Math.max(0, WEEKLY_AI_REQUEST_LIMIT - row.requests_used) } : { allowed: false, remaining: 0 };
 }
 
