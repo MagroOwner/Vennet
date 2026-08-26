@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 const sections: Array<[string, string[]]> = [
   ["1. Definitions", [
-    "“Account” means a registered Vennet user account. “Buyer” means a user who purchases an Offer. “Seller” means a user who lists or sells an Offer. “Offer” means a digital-only product, service, membership, subscription, download, file, template, software license, or other non-physical offering listed on Vennet.",
+    "“Account” means a registered Vennet user account. “AI Services” means Vennet AI and any artificial-intelligence features, models, tools, or outputs made available through the Services. “Buyer” means a user who purchases an Offer. “Seller” means a user who lists or sells an Offer. “Offer” means a digital-only product, service, membership, subscription, download, file, template, software license, or other non-physical offering listed on Vennet.",
     "“Vennet,” “we,” “us,” and “our” mean [Legal Company Name], a [Michigan entity type], with its principal business address at [Business Address]. “Services” means Vennet’s website, marketplace, creator tools, payment features, verification tools, and related software. “Stripe Account” means a Stripe or Stripe Connect account used to receive payouts. “Terms” means these Terms of Service and the policies incorporated by reference.",
   ]],
   ["2. Acceptance and eligibility", [
@@ -116,17 +116,28 @@ const sections: Array<[string, string[]]> = [
     "Vennet does not offer a public API. You may not access, query, copy, monitor, index, scrape, crawl, harvest, automate, or interact with the Services through bots, scripts, agents, browser automation, data-extraction tools, reverse engineering, or other automated means unless Vennet gives prior written permission.",
     "You may not attempt to discover source code, bypass access controls, interfere with the Services, create accounts or transactions by automated means, or use automation to gain an unfair commercial, technical, or marketplace advantage. This prohibition is in addition to, and does not limit, the anti-circumvention and prohibited-conduct provisions of these Terms.",
   ]],
+
+  ["24. Vennet AI and third-party artificial intelligence services", [
+    "Vennet may offer AI Services, including Vennet AI, to eligible Accounts. AI Services are currently a Vennet Pro feature and are subject to a weekly allowance of up to 20 requests per eligible Pro Account. Vennet may change, suspend, reduce, reset, or discontinue AI Services, request limits, eligibility requirements, features, models, or availability at any time, including to control costs, prevent misuse, protect the Services, comply with law, or respond to a third-party provider limitation.",
+    "AI Services may rely on third-party providers, including Google Gemini, and their systems, models, content filters, rate limits, service credits, policies, outages, errors, and decisions. Vennet does not control and does not guarantee the availability, capacity, speed, accuracy, continuity, suitability, or output of a third-party AI provider. Vennet is not liable for an AI Service being unavailable, rate-limited, blocked, interrupted, degraded, changed, or exhausted because a provider reaches a quota, credit limit, rate limit, safety restriction, service outage, or other limitation.",
+    "Your Account’s AI allowance is personal to that Account. You may not create or use multiple Accounts, automate requests, share access, resell AI access, use another person’s Account, or otherwise circumvent a request limit, eligibility restriction, payment requirement, or safety control. Attempted circumvention is a material breach of these Terms and may result in suspension or termination.",
+    "You are responsible for all content, instructions, information, and materials you submit to an AI Service and for reviewing every output before relying on, publishing, delivering, or acting on it. AI output may be inaccurate, incomplete, infringing, unsuitable, unavailable, or generated from a misunderstanding of your request. AI output is not legal, tax, financial, medical, professional, security, or compliance advice. Do not submit passwords, payment-card data, Stripe credentials, government identification, private buyer information, trade secrets, or other sensitive information to an AI Service.",
+    "To the maximum extent permitted by law, Vennet disclaims all responsibility and liability for AI inputs, outputs, suggestions, provider behavior, third-party service failures, lost or unavailable AI credits, rate limits, and any decision, listing, communication, purchase, sale, or other action taken or not taken in reliance on an AI Service. The limitations, disclaimers, acceptable-use rules, indemnification obligations, and dispute provisions in these Terms apply to AI Services.",
+  ]],
 ];
 
 export default function TermsPage() {
   return (
     <article className="mx-auto max-w-4xl space-y-8">
-      <header className="console-panel p-7 sm:p-10">
-        <p className="font-mono text-xs font-bold uppercase tracking-widest text-emerald-400">Legal</p>
-        <h1 className="mt-3 text-4xl font-black">Terms of Service</h1>
-        <p className="mt-3 text-zinc-400">Effective date: [Month Day, Year] · Last updated: [Month Day, Year]</p>
-        <p className="mt-5 leading-7 text-zinc-300">These Terms govern your use of Vennet, a digital-only marketplace for products, services, and creator offers. Please read them carefully.</p>
-        <p className="mt-4 rounded-lg border border-amber-800 bg-amber-950/20 p-4 text-sm leading-6 text-amber-200">Template notice: Before publishing, replace all bracketed fields and have a qualified Michigan attorney review this page and its related policies.</p>
+      <header className="relative overflow-hidden rounded-3xl bg-slate-950 p-7 text-white shadow-2xl shadow-emerald-950/20 sm:p-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_0%,rgba(52,211,153,.22),transparent_34%)]" />
+        <div className="relative">
+          <div className="flex flex-wrap items-center gap-3"><p className="text-xs font-black uppercase tracking-[.2em] text-emerald-300">Vennet legal</p><span className="rounded-full bg-emerald-300 px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-slate-950">Published</span></div>
+          <h1 className="mt-3 text-4xl font-black tracking-tight">Terms of Service</h1>
+          <p className="mt-3 text-sm font-medium text-slate-300">Effective August 25, 2026 · Last updated August 25, 2026</p>
+          <p className="mt-5 max-w-3xl leading-7 text-slate-200">These Terms govern your use of Vennet, a digital-only marketplace for products, services, subscriptions, and creator tools. Please read them carefully before using the Services.</p>
+          <p className="mt-5 rounded-2xl border border-white/10 bg-white/[.07] p-4 text-sm leading-6 text-slate-200">Questions about these Terms? Contact <a href="mailto:vennetofficial@gmail.com" className="font-bold text-emerald-200 hover:text-emerald-100">vennetofficial@gmail.com</a>.</p>
+        </div>
       </header>
       {sections.map(([heading, paragraphs]) => (
         <section key={heading} className="console-panel p-6">
