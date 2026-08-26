@@ -17,7 +17,7 @@ export function SellerSidebar() {
   const [open, setOpen] = useState(false);
 
   return <>
-    <button type="button" onClick={() => setOpen(true)} aria-label="Open seller tools" className="fixed bottom-5 left-5 z-20 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-xl shadow-slate-950/25 transition hover:-translate-y-0.5 hover:bg-emerald-800">
+    <button type="button" onClick={() => setOpen(true)} aria-label="Open seller tools" className="inline-flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 py-2.5 text-sm font-black text-emerald-900 transition hover:border-emerald-400 hover:bg-emerald-100">
       <span aria-hidden="true">☰</span> Seller tools
     </button>
     {open && <button aria-label="Close seller tools" type="button" onClick={() => setOpen(false)} className="fixed inset-0 z-40 cursor-default bg-slate-950/35 backdrop-blur-[1px]" />}
