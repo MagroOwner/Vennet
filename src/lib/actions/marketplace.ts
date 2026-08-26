@@ -369,7 +369,7 @@ export async function purchaseCart(): Promise<ActionResult<{ url: string }>> {
     const checkout = await getStripe().checkout.sessions.create({
       mode: "payment",
       line_items: cartListings.map((listing) => ({ quantity: 1, price_data: { currency: listing.currency, unit_amount: listing.priceCents, product_data: { name: listing.title, description: listing.description.slice(0, 500) } } })),
-      payment_intent_data: { application_fee_amount: transactionRows.reduce((total, row) => total + row.fee, 0), transfer_data: { destination: sellerAccount.stripeAccountId }, metadata: { transactionIds: transactionRows.map((row) => row.transaction.id).join(","), buyerId: userId } },
+      payment_intent_data: { application_fee_amount: transactionRows.reduce((total, row) => total + row.fee, 0), transfer_data: { destination: sellerAccount.stripeAccountId }, metadata: { transactionIds: transactionRows.map((row) => row.transaction.id).join(","), listingIds: cartListings.map((listing) => listing.id).join(","), buyerId: userId } },
       client_reference_id: userId,
       metadata: { transactionIds: transactionRows.map((row) => row.transaction.id).join(","), listingIds: cartListings.map((listing) => listing.id).join(","), buyerId: userId },
       success_url: appUrl() + "/inventory?purchase=success",
