@@ -41,9 +41,8 @@ export async function completeTransaction(transactionId: string): Promise<void> 
   });
   const [referral] = await db.select().from(referrals).where(eq(referrals.refereeId, transaction.buyerId)).limit(1);
   if (referral && referral.status === "signed_up") {
-    const rewardCents = 500;
-    await db.update(referrals).set({ status: "qualified", rewardCents, qualifiedAt: new Date() }).where(eq(referrals.id, referral.id));
-    await db.insert(notifications).values({ userId: referral.referrerId, title: "Referral reward unlocked", body: "A referred member made a verified purchase. You earned a $5 Vennet reward credit.", href: "/dashboard/seller" });
+    await db.update(referrals).set({ status: "qualified", qualifiedAt: new Date() }).where(eq(referrals.id, referral.id));
+    await db.insert(notifications).values({ userId: referral.referrerId, title: "Referral qualified", body: "A referred member made a verified purchase. Your referral is now marked as qualified.", href: "/dashboard/seller" });
   }
 
   await applyReputationEvent({
