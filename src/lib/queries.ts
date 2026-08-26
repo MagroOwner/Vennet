@@ -229,7 +229,7 @@ export type ListingTrust = { averageRating: number | null; reviewCount: number; 
 export async function getListingTrust(listingRows: Listing[]): Promise<Record<string, ListingTrust>> {
   if (!listingRows.length) return {};
   const listingIds = listingRows.map((listing) => listing.id);
-  const sellerIds = [...new Set(listingRows.map((listing) => listing.sellerId))];
+  const sellerIds = listingRows.map((listing) => listing.sellerId).filter((sellerId, index, all) => all.indexOf(sellerId) === index);
   const [reviewRows, sellerRows] = await Promise.all([
     db.select({ listingId: listingReviews.listingId, rating: listingReviews.rating }).from(listingReviews).where(and(inArray(listingReviews.listingId, listingIds), eq(listingReviews.hidden, false))),
     db.select({ userId: identities.userId, verificationStatus: identities.verificationStatus }).from(identities).where(inArray(identities.userId, sellerIds)),
