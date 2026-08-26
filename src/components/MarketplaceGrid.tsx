@@ -13,7 +13,7 @@ const gridClasses: Record<DisplaySize, string> = {
   large: "grid gap-6 md:grid-cols-2",
 };
 
-export function MarketplaceGrid({ listings, heading = "Explore offers" }: { listings: Listing[]; heading?: string }) {
+export function MarketplaceGrid({ listings, heading = "Explore offers", savedListingIds = [] }: { listings: Listing[]; heading?: string; savedListingIds?: string[] }) {
   const [size, setSize] = useState<DisplaySize>("medium");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<Sort>("newest");
@@ -57,7 +57,7 @@ export function MarketplaceGrid({ listings, heading = "Explore offers" }: { list
           </select>
         </div>
       </div>
-      {visibleListings.length === 0 ? <div className="mt-5 rounded-2xl border border-slate-200 bg-white/70 p-10 text-center shadow-sm"><p className="text-lg font-bold text-slate-950">No offers match that search.</p><button type="button" onClick={() => setQuery("")} className="mt-3 font-bold text-emerald-800 hover:text-emerald-950">Clear search</button></div> : <div className={"mt-5 " + gridClasses[size]}>{visibleListings.map((listing, index) => <div key={listing.id} className="animate-rise" style={{ animationDelay: Math.min(index * 55, 440) + "ms" }}><ListingCard listing={listing} size={size} /></div>)}</div>}
+      {visibleListings.length === 0 ? <div className="mt-5 rounded-2xl border border-slate-200 bg-white/70 p-10 text-center shadow-sm"><p className="text-lg font-bold text-slate-950">No offers match that search.</p><button type="button" onClick={() => setQuery("")} className="mt-3 font-bold text-emerald-800 hover:text-emerald-950">Clear search</button></div> : <div className={"mt-5 " + gridClasses[size]}>{visibleListings.map((listing, index) => <div key={listing.id} className="animate-rise" style={{ animationDelay: Math.min(index * 55, 440) + "ms" }}><ListingCard listing={listing} size={size} saved={savedListingIds.includes(listing.id)} /></div>)}</div>}
     </>
   );
 }
