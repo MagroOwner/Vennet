@@ -4,6 +4,7 @@ import { ReputationBadge, VerifiedBadge } from "@/components/Badges";
 import { SaveListingButton } from "@/components/SaveListingButton";
 import { PriceAlertButton } from "@/components/PriceAlertButton";
 import { ReviewReplyForm } from "@/components/ReviewReplyForm";
+import { RecentlyViewedTracker } from "@/components/RecentlyViewedTracker";
 import { ListingCard } from "@/components/ListingCard";
 import { BuyButton } from "@/components/forms/BuyButton";
 import { auth } from "@/lib/auth";
@@ -37,6 +38,7 @@ export default async function ListingPage({ params }: { params: { id: string } }
 
   return (
     <main className="pb-12">
+      <RecentlyViewedTracker offer={{ id: listing.id, title: listing.title, price: formatPrice(listing.priceCents, listing.currency), imageUrl: listing.imageUrls[0] }} />
       <Link href="/marketplace" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-emerald-700">← Back to marketplace</Link>
       <div className="mt-5 grid gap-8 lg:grid-cols-[1.1fr_.9fr]">
         <section>
