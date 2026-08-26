@@ -37,6 +37,10 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
   const [licenseType, setLicenseType] = useState(listing?.licenseType ?? "Personal use");
   const [deliveryTime, setDeliveryTime] = useState(listing?.deliveryTime ?? "Available after payment");
   const [previewUrl, setPreviewUrl] = useState(listing?.previewUrl ?? "");
+  const [fileType, setFileType] = useState(listing?.fileType ?? "");
+  const [compatibility, setCompatibility] = useState(listing?.compatibility ?? "");
+  const [includesUpdates, setIncludesUpdates] = useState(listing?.includesUpdates ?? false);
+  const [updatePolicy, setUpdatePolicy] = useState(listing?.updatePolicy ?? "");
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +112,10 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
         licenseType,
         deliveryTime,
         previewUrl,
+        fileType,
+        compatibility,
+        includesUpdates,
+        updatePolicy,
       };
       const result = listing
         ? await updateListing({ ...input, listingId: listing.id })
@@ -162,6 +170,9 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
           </div>
           <div><label className="mb-1.5 block text-sm font-bold text-slate-900">Search tags</label><input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="e.g. notion, creator, planning" className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white" /><p className="mt-1 text-xs text-slate-600">Use commas to help buyers discover your work.</p></div>
           <div><label className="mb-1.5 block text-sm font-bold text-slate-900">Preview or demo link <span className="font-medium text-slate-500">(optional)</span></label><input type="url" value={previewUrl} onChange={(e) => setPreviewUrl(e.target.value)} placeholder="https://…" className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white" /></div>
+          <div className="grid gap-4 sm:grid-cols-2"><div><label className="mb-1.5 block text-sm font-bold text-slate-900">File format <span className="font-medium text-slate-500">(optional)</span></label><input value={fileType} onChange={(e) => setFileType(e.target.value)} placeholder="PDF, ZIP, Figma, MP3…" className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white" /></div><div><label className="mb-1.5 block text-sm font-bold text-slate-900">Compatibility <span className="font-medium text-slate-500">(optional)</span></label><input value={compatibility} onChange={(e) => setCompatibility(e.target.value)} placeholder="Mac, Windows, Notion…" className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white" /></div></div>
+          <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800"><input type="checkbox" checked={includesUpdates} onChange={(e) => setIncludesUpdates(e.target.checked)} className="h-4 w-4 accent-emerald-600" /> Includes future updates</label>
+          {includesUpdates && <div><label className="mb-1.5 block text-sm font-bold text-slate-900">Update policy</label><textarea rows={3} value={updatePolicy} onChange={(e) => setUpdatePolicy(e.target.value)} placeholder="Explain what updates are included and for how long." className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white" /></div>}
         </div>
       </section>
 
