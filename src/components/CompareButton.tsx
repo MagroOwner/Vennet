@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 type Offer = { id: string; title: string; priceCents: number; currency: string; category: string; imageUrl?: string };
 
 export function CompareButton({ offer }: { offer: Offer }) {
