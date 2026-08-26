@@ -67,13 +67,13 @@ export async function sendPurchaseMessage(input: z.input<typeof messageSchema>):
   } catch (error) { return failure(error); }
 }
 
-const couponSchema = z.object({ code: z.string().trim().toUpperCase().regex(/^[A-Z0-9-]{3,32}$/), discountPercent: z.number().int().min(1).max(80) });
+const couponSchema = z.object({ code: z.string().trim().toUpperCase().regex(/^[A-Z0-9-]{3,32}$/), discountPercent: z.number().int().min(1).max(80), expiresAt: z.string().datetime().optional() });
 
 export async function createSellerCoupon(input: z.input<typeof couponSchema>): Promise<ActionResult> {
   try {
     const { userId } = await requireAuth();
     const data = couponSchema.parse(input);
-    await db.insert(sellerCoupons).values({ sellerId: userId, code: data.code, discountPercent: data.discountPercent });
+    await db.insert(sellerCoupons).values({ sellerId: userId, code: data.code, discountPercent: data.discountPercent, expiresAt: data.expiresAt ? new Date(data.expiresAt) : null });
     revalidatePath("/dashboard/seller");
     return { ok: true };
   } catch (error) { return failure(error); }
