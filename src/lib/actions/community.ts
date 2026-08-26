@@ -6,7 +6,7 @@ import { z } from "zod";
 import { ActionError, failure } from "@/lib/action-error";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { creatorFollows, listingBundles, listingReviews, listings, notifications, priceAlerts, purchaseMessages, referralCodes, savedListings, sellerCoupons, transactions } from "@/lib/db/schema";
+import { creatorFollows, listingBundles, listingReviews, listings, priceAlerts, purchaseMessages, referralCodes, savedListings, sellerCoupons, transactions } from "@/lib/db/schema";
 import type { ActionResult } from "@/lib/types";
 
 export async function toggleSavedListing(listingId: string): Promise<ActionResult<{ saved: boolean }>> {
