@@ -4,6 +4,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createListing, updateListing } from "@/lib/actions/marketplace";
+import { COLLECTIONS } from "@/lib/collections";
 import type { Listing, ListingCategory } from "@/lib/types";
 
 const OFFER_TYPES: { value: ListingCategory; label: string }[] = [
@@ -31,6 +32,11 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
   );
   const [deliveryInstructions, setDeliveryInstructions] = useState(listing?.deliveryInstructions ?? "");
   const [supportContact, setSupportContact] = useState(listing?.supportContact ?? "");
+  const [collection, setCollection] = useState(listing?.collection ?? "");
+  const [tags, setTags] = useState((listing?.tags ?? []).join(", "));
+  const [licenseType, setLicenseType] = useState(listing?.licenseType ?? "Personal use");
+  const [deliveryTime, setDeliveryTime] = useState(listing?.deliveryTime ?? "Available after payment");
+  const [previewUrl, setPreviewUrl] = useState(listing?.previewUrl ?? "");
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +103,11 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
         deliveryFilePaths: deliveryFiles.map((file) => file.pathname),
         deliveryInstructions,
         supportContact,
+        collection,
+        tags: tags.split(",").map((tag) => tag.trim()).filter(Boolean),
+        licenseType,
+        deliveryTime,
+        previewUrl,
       };
       const result = listing
         ? await updateListing({ ...input, listingId: listing.id })
@@ -145,6 +156,12 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
             <label className="mb-1.5 block text-sm font-bold text-slate-900">Price (USD)</label>
             <input required type="number" min="1" step="0.01" placeholder="0.00" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white" />
           </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div><label className="mb-1.5 block text-sm font-bold text-slate-900">Collection</label><select value={collection} onChange={(e) => setCollection(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white"><option value="">Choose a collection</option>{COLLECTIONS.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select></div>
+            <div><label className="mb-1.5 block text-sm font-bold text-slate-900">License</label><select value={licenseType} onChange={(e) => setLicenseType(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white"><option>Personal use</option><option>Commercial use</option><option>Extended use</option></select></div>
+          </div>
+          <div><label className="mb-1.5 block text-sm font-bold text-slate-900">Search tags</label><input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="e.g. notion, creator, planning" className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white" /><p className="mt-1 text-xs text-slate-600">Use commas to help buyers discover your work.</p></div>
+          <div><label className="mb-1.5 block text-sm font-bold text-slate-900">Preview or demo link <span className="font-medium text-slate-500">(optional)</span></label><input type="url" value={previewUrl} onChange={(e) => setPreviewUrl(e.target.value)} placeholder="https://…" className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white" /></div>
         </div>
       </section>
 
@@ -164,6 +181,10 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
           <input type="file" multiple onChange={(e) => e.target.files && uploadDeliveryFiles(e.target.files)} className="mt-3 block w-full text-sm font-medium text-slate-800" />
           {deliveryFiles.length > 0 && <ul className="mt-3 space-y-2">{deliveryFiles.map((file) => <li key={file.pathname} className="flex items-center justify-between gap-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-950"><span className="min-w-0 truncate">✓ {file.name}</span><button type="button" onClick={() => setDeliveryFiles((current) => current.filter((item) => item.pathname !== file.pathname))} className="shrink-0 text-emerald-800 underline hover:text-emerald-950">Remove</button></li>)}</ul>}
         </div>}
+        <div className="mt-5">
+          <label className="mb-1.5 block text-sm font-bold text-slate-900">Delivery expectation</label>
+          <select value={deliveryTime} onChange={(e) => setDeliveryTime(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white"><option>Instant access after payment</option><option>Within one business day</option><option>Within one week</option><option>See buyer access details</option></select>
+        </div>
         <div className="mt-5">
           <label className="mb-1.5 block text-sm font-bold text-slate-900">Buyer access details</label>
           <textarea required rows={4} placeholder={category === "digital" ? "Explain what the files contain and how the buyer should use them." : "Explain exactly how the buyer accesses the service or subscription after purchase."} value={deliveryInstructions} onChange={(e) => setDeliveryInstructions(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white" />
