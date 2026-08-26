@@ -223,3 +223,19 @@ export async function getListingSaveCount(listingId: string): Promise<number> {
   const rows = await db.select({ userId: savedListings.userId }).from(savedListings).where(eq(savedListings.listingId, listingId));
   return rows.length;
 }
+
+export type ListingTrust = { averageRating: number | null; reviewCount: number; sellerVerified: boolean };
+export async function getListingTrust(listingRows: Listing[]): Promise<Record<string, ListingTrust>> {
+  if (!listingRows.length) return {};
+  const listingIds = listingRows.map((listing) => listing.id);
+  const sellerIds = [...new Set(listingRows.map((listing) => listing.sellerId))];
+  const [reviewRows, sellerRows] = await Promise.all([
+    db.select({ listingId: listingReviews.listingId, rating: listingReviews.rating }).from(listingReviews).where(and(inArray(listingReviews.listingId, listingIds), eq(listingReviews.hidden, false))),
+    db.select({ userId: identities.userId, verificationStatus: identities.verificationStatus }).from(identities).where(inArray(identities.userId, sellerIds)),
+  ]);
+  const verifiedSellers = new Set(sellerRows.filter((seller) => seller.verificationStatus === "verified").map((seller) => seller.userId));
+  return Object.fromEntries(listingRows.map((listing) => {
+    const rows = reviewRows.filter((review) => review.listingId === listing.id);
+    return [listing.id, { averageRating: rows.length ? rows.reduce((total, review) => total + review.rating, 0) / rows.length : null, reviewCount: rows.length, sellerVerified: verifiedSellers.has(listing.sellerId) }];
+  }));
+}
