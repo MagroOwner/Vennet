@@ -39,11 +39,21 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   );
 }
 
+const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
+const isProduction = process.env.NODE_ENV === "production";
+
 export const authOptions: NextAuthOptions = {
   providers,
-  // Persistent, secure login session. Users remain signed in for 30 days unless they sign out or clear browser data.
-  session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30, updateAge: 60 * 60 * 24 },
-  jwt: { maxAge: 60 * 60 * 24 * 30 },
+  // Users remain signed in for 30 days unless they sign out or clear browser data.
+  session: { strategy: "jwt", maxAge: SESSION_MAX_AGE, updateAge: 60 * 60 * 24 },
+  jwt: { maxAge: SESSION_MAX_AGE },
+  useSecureCookies: isProduction,
+  cookies: {
+    sessionToken: {
+      name: isProduction ? "__Secure-vennet.session-token" : "vennet.session-token",
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: isProduction, maxAge: SESSION_MAX_AGE },
+    },
+  },
   pages: { signIn: "/login" },
   callbacks: {
     async signIn({ user, account }) {
