@@ -28,6 +28,9 @@ project settings for production.
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob read/write token |
 | `STRIPE_SECRET_KEY` | Stripe secret key |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret of the `/api/stripe/webhook` endpoint |
+| `SENDGRID_API_KEY` | Secret API key used to send email-verification codes |
+| `SENDGRID_FROM_EMAIL` | Verified SendGrid sender email address |
+| `SENDGRID_FROM_NAME` | Display name for verification emails |
 
 Google OAuth redirect URI: `<NEXTAUTH_URL>/api/auth/callback/google`.
 
