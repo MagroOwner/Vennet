@@ -5,6 +5,7 @@ import {
   disputes,
   fraudSignals,
   identities,
+  listingBundles,
   listingReviews,
   listings,
   notifications,
@@ -238,4 +239,13 @@ export async function getListingTrust(listingRows: Listing[]): Promise<Record<st
     const rows = reviewRows.filter((review) => review.listingId === listing.id);
     return [listing.id, { averageRating: rows.length ? rows.reduce((total, review) => total + review.rating, 0) / rows.length : null, reviewCount: rows.length, sellerVerified: verifiedSellers.has(listing.sellerId) }];
   }));
+}
+
+export async function getSellerBundles(sellerId: string) {
+  return db.select().from(listingBundles).where(eq(listingBundles.sellerId, sellerId)).orderBy(desc(listingBundles.createdAt));
+}
+
+export async function getBundle(id: string) {
+  const [bundle] = await db.select().from(listingBundles).where(eq(listingBundles.id, id)).limit(1);
+  return bundle ?? null;
 }
