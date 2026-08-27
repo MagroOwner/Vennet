@@ -261,3 +261,13 @@ export async function getNotificationPreferences(userId: string) {
   const [row] = await db.select().from(notificationPreferences).where(eq(notificationPreferences.userId, userId)).limit(1);
   return row ?? { userId, priceDrops: true, creatorReleases: true, purchaseUpdates: true, productUpdates: true, updatedAt: new Date() };
 }
+
+
+export async function getCommunityStats(): Promise<{ total: number; pro: number; verified: number }> {
+  const [members, proMembers, verifiedMembers] = await Promise.all([
+    db.select({ id: users.id }).from(users).where(eq(users.disabled, false)),
+    db.select({ id: users.id }).from(users).where(and(eq(users.disabled, false), eq(users.isPro, true))),
+    db.select({ userId: identities.userId }).from(identities).where(eq(identities.verificationStatus, "verified")),
+  ]);
+  return { total: members.length, pro: proMembers.length, verified: verifiedMembers.length };
+}
