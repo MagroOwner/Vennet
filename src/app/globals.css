@@ -5,15 +5,16 @@
 :root { --background: #f8faf9; --foreground: #16251f; }
 
 * { border-color: rgb(255 255 255 / 0.09); }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; font-size: 17px; }
 a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid rgb(16 185 129 / 0.65); outline-offset: 3px; }
 body {
   min-height: 100vh;
   color: var(--foreground);
   background:
-    radial-gradient(900px 520px at -14% -12%, rgb(167 243 208 / 0.38), transparent 64%),
-    radial-gradient(720px 480px at 110% 14%, rgb(186 230 253 / 0.28), transparent 64%),
-    linear-gradient(180deg, #ffffff 0%, #f8faf9 52%, #f5f8f6 100%);
+    radial-gradient(780px 520px at -10% -8%, rgb(167 243 208 / 0.46), transparent 64%),
+    radial-gradient(760px 520px at 110% 2%, rgb(253 230 138 / 0.30), transparent 62%),
+    radial-gradient(680px 480px at 78% 84%, rgb(186 230 253 / 0.30), transparent 62%),
+    linear-gradient(140deg, #fffdf8 0%, #f7fbf7 46%, #f8fcfd 100%);
   background-attachment: fixed;
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   letter-spacing: -0.012em;
