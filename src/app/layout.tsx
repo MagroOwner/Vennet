@@ -22,7 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <Navbar />
           <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-7 sm:px-5 sm:py-8">{children}</main>
           <footer className="border-t border-slate-200 bg-white px-5 py-7 text-center text-sm font-medium text-slate-500">
-            <span>© {new Date().getFullYear()} Vennet</span><span className="mx-3">·</span><Link href="/terms" className="font-semibold text-slate-700 transition hover:text-emerald-700">Terms of Service</Link>
+            <span>© {new Date().getFullYear()} Vennet</span><span className="mx-3">·</span><Link href="/terms" className="font-semibold text-slate-700 transition hover:text-emerald-700">Terms of Service</Link><span className="mx-3">·</span><Link href="/privacy" className="font-semibold text-slate-700 transition hover:text-emerald-700">Privacy Policy</Link><span className="mx-3">·</span><Link href="/legal" className="font-semibold text-slate-700 transition hover:text-emerald-700">Legal Notices</Link>
           </footer>
           <CookieConsent />
         </Providers>
