@@ -43,6 +43,8 @@ const sections: Array<[string, string[]]> = [
   ]],
   ["8. Seller promises", [
     "Each Seller represents that it owns or has all rights, licenses, permissions, and authority needed to offer and deliver each Offer; describes it accurately; will deliver it as promised; and will comply with applicable law and Stripe requirements. Vennet may remove or restrict an Offer at any time. Removal does not release the Seller from obligations to Buyers, Stripe, Vennet, or third parties.",
+    "A Seller offering a bot, automation, integration, workflow, or similar tool must offer a fully ready, functional, and accessible product or service at the time of listing. Before publishing, the Seller must test the tool, provide a working buyer-access resource such as a Discord bot invite, dashboard, download, workflow-copy link, or other stated access method, and provide clear setup, hosting, permissions, account, compatibility, update, and support information. The Seller must never provide or request another person’s passwords, API keys, tokens, or credentials through an Offer.",
+    "A Seller may not list an unfinished, nonfunctional, inaccessible, misleading, or placeholder bot or automation as a completed Offer. Sellers are responsible for maintaining the stated access method, promptly addressing access failures, and complying with the applicable third-party platform terms, developer policies, and law. If access fails, the Seller must provide reasonable support and an appropriate remedy required by law or the applicable Offer terms.",
   ]],
   ["9. Intellectual property and DMCA", [
     "Vennet and its licensors own the Services, software, branding, and Vennet-created content. Except for the limited right to use the Services, no rights are granted.",
