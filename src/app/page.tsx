@@ -8,6 +8,7 @@ const categories = [
   { icon: "▦", title: "Templates", detail: "Ready-to-use systems that save hours", href: "/collections/templates", color: "bg-blue-100 text-blue-700" },
   { icon: "♫", title: "Music & Audio", detail: "Sounds, samples, and production tools", href: "/collections/music-audio", color: "bg-violet-100 text-violet-700" },
   { icon: "</>", title: "Code", detail: "Components, scripts, and developer tools", href: "/collections/code", color: "bg-emerald-100 text-emerald-700" },
+  { icon: "⚡", title: "Bots & Automations", detail: "Discord bots, integrations, and workflow tools", href: "/collections/bots-automations", color: "bg-teal-100 text-teal-700" },
   { icon: "✳", title: "AI tools", detail: "Prompts, workflows, and creator systems", href: "/collections/ai-tools", color: "bg-amber-100 text-amber-700" },
   { icon: "◎", title: "Education", detail: "Courses, guides, and practical playbooks", href: "/collections/education", color: "bg-cyan-100 text-cyan-700" },
 ];
