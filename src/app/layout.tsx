@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Providers } from "@/components/Providers";
 import { CookieConsent } from "@/components/CookieConsent";
+import { GuidePanel } from "@/components/GuidePanel";
 import Link from "next/link";
 
 const geistSans = localFont({ src: "./fonts/GeistVF.woff", variable: "--font-geist-sans", weight: "100 900" });
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <footer className="border-t border-slate-200 bg-white px-5 py-7 text-center text-sm font-medium text-slate-500">
             <span>© {new Date().getFullYear()} Vennet</span><span className="mx-3">·</span><Link href="/terms" className="font-semibold text-slate-700 transition hover:text-emerald-700">Terms of Service</Link><span className="mx-3">·</span><Link href="/privacy" className="font-semibold text-slate-700 transition hover:text-emerald-700">Privacy Policy</Link><span className="mx-3">·</span><Link href="/legal" className="font-semibold text-slate-700 transition hover:text-emerald-700">Legal Notices</Link>
           </footer>
+          <GuidePanel />
           <CookieConsent />
         </Providers>
       </body>
