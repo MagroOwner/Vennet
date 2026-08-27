@@ -12,11 +12,13 @@ body {
   min-height: 100vh;
   color: var(--foreground);
   background:
-    radial-gradient(780px 520px at -10% -8%, rgb(167 243 208 / 0.46), transparent 64%),
-    radial-gradient(760px 520px at 110% 2%, rgb(253 230 138 / 0.30), transparent 62%),
-    radial-gradient(680px 480px at 78% 84%, rgb(186 230 253 / 0.30), transparent 62%),
-    linear-gradient(140deg, #fffdf8 0%, #f7fbf7 46%, #f8fcfd 100%);
+    radial-gradient(900px 620px at -12% -15%, rgb(110 231 183 / 0.36), transparent 60%),
+    radial-gradient(820px 620px at 110% -5%, rgb(253 224 71 / 0.22), transparent 58%),
+    radial-gradient(760px 620px at 88% 92%, rgb(125 211 252 / 0.24), transparent 62%),
+    radial-gradient(620px 480px at 12% 78%, rgb(216 180 254 / 0.16), transparent 63%),
+    linear-gradient(135deg, #fffdfa 0%, #f4fbf7 48%, #f5faff 100%);
   background-attachment: fixed;
+  background-size: cover;
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   letter-spacing: -0.012em;
 }
