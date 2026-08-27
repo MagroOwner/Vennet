@@ -39,6 +39,7 @@ const createListingSchema = z.object({
     .max(8, "Up to 8 delivery files allowed.")
     .default([]),
   deliveryInstructions: z.string().trim().min(10, "Explain how the buyer will access their purchase.").max(5000),
+  automationAccessUrl: z.string().trim().url("Use a full automation access URL.").max(2048).or(z.literal("")).default(""),
   supportContact: z.string().trim().min(3, "Provide a support email, link, or contact method.").max(500),
   previewUrl: z.string().trim().url("Use a full preview URL.").max(2048).or(z.literal("")).default(""),
   collection: z.string().trim().max(80).default(""),
@@ -50,6 +51,12 @@ const createListingSchema = z.object({
   includesUpdates: z.boolean().default(false),
   updatePolicy: z.string().trim().max(1000).default(""),
 });
+
+function deliveryDetails(data: z.infer<typeof createListingSchema>) {
+  return data.collection === "bots-automations"
+    ? data.deliveryInstructions.trim() + "\n\nAutomation access link: " + data.automationAccessUrl.trim()
+    : data.deliveryInstructions;
+}
 
 export async function createListing(
   input: z.input<typeof createListingSchema>
@@ -77,6 +84,9 @@ export async function createListing(
     }
     if (data.category === "digital" && data.deliveryFilePaths.length === 0) {
       throw new ActionError("Upload at least one downloadable file for a digital product.");
+    }
+    if (data.collection === "bots-automations" && !data.automationAccessUrl) {
+      throw new ActionError("Add a working bot or automation access link before publishing.");
     }
     if (!data.deliveryFilePaths.every((path) => path.startsWith(`deliveryFiles/${userId}/`))) {
       throw new ActionError("Delivery files must be uploaded by the listing seller.");
@@ -123,7 +133,7 @@ export async function createListing(
         currency: "usd",
         imageUrls: data.imageUrls,
         deliveryFilePaths: data.deliveryFilePaths,
-        deliveryInstructions: data.deliveryInstructions,
+        deliveryInstructions: deliveryDetails(data),
         supportContact: data.supportContact,
         previewUrl: data.previewUrl,
         collection: data.collection,
@@ -178,6 +188,9 @@ export async function updateListing(
     if (data.category === "digital" && data.deliveryFilePaths.length === 0) {
       throw new ActionError("Upload at least one downloadable file for a digital product.");
     }
+    if (data.collection === "bots-automations" && !data.automationAccessUrl) {
+      throw new ActionError("Add a working bot or automation access link before saving.");
+    }
     if (!data.deliveryFilePaths.every((path) => path.startsWith(`deliveryFiles/${userId}/`))) {
       throw new ActionError("Delivery files must be uploaded by the listing seller.");
     }
@@ -216,7 +229,7 @@ export async function updateListing(
         priceCents: data.priceCents,
         imageUrls: data.imageUrls,
         deliveryFilePaths: data.deliveryFilePaths,
-        deliveryInstructions: data.deliveryInstructions,
+        deliveryInstructions: deliveryDetails(data),
         supportContact: data.supportContact,
         previewUrl: data.previewUrl,
         collection: data.collection,
