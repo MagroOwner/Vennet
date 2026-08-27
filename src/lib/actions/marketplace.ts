@@ -427,6 +427,16 @@ export async function setListingVisibility(
 
     if (!listing) throw new ActionError("You can only manage your own listings.");
     if (listing.status === "suspended") throw new ActionError("This listing is suspended and cannot be changed here.");
+    if (visible) {
+      const [stripeAccount] = await db
+        .select({ chargesEnabled: stripeAccounts.chargesEnabled, payoutsEnabled: stripeAccounts.payoutsEnabled })
+        .from(stripeAccounts)
+        .where(eq(stripeAccounts.userId, userId))
+        .limit(1);
+      if (!stripeAccount?.chargesEnabled || !stripeAccount.payoutsEnabled) {
+        throw new ActionError("Set up Stripe payouts before publishing this listing. Your draft will stay private until then.");
+      }
+    }
 
     await db
       .update(listings)
