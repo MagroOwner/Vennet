@@ -31,6 +31,9 @@ export function MarketplaceGrid({ listings, heading = "Explore offers", savedLis
   const [updatesOnly, setUpdatesOnly] = useState(false);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [minimumRating, setMinimumRating] = useState("");
+  const [offerType, setOfferType] = useState("");
+  const [freshness, setFreshness] = useState("");
+  const [previewOnly, setPreviewOnly] = useState(false);
   const enrichedListings = listings as MarketplaceListing[];
 
   useEffect(() => {
@@ -43,6 +46,9 @@ export function MarketplaceGrid({ listings, heading = "Explore offers", savedLis
     const selectedCollection = COLLECTIONS.find((item) => item.slug === collection);
     return [...enrichedListings]
       .filter((listing) => !term || [listing.title, listing.description, listing.collection ?? "", ...(listing.tags ?? [])].join(" ").toLowerCase().includes(term))
+      .filter((listing) => !offerType || listing.category === offerType)
+      .filter((listing) => !previewOnly || Boolean(listing.previewUrl || listing.imageUrls?.length))
+      .filter((listing) => { if (!freshness) return true; const days = Number(freshness); return new Date(listing.createdAt).getTime() >= Date.now() - days * 24 * 60 * 60 * 1000; })
       .filter((listing) => !selectedCollection || collectionMatchesListing(selectedCollection, listing))
       .filter((listing) => !license || listing.licenseType?.toLowerCase().includes(license))
       .filter((listing) => !delivery || (listing.deliveryTime ?? "").toLowerCase().includes(delivery))
@@ -63,7 +69,7 @@ export function MarketplaceGrid({ listings, heading = "Explore offers", savedLis
         if (sort === "popular") return b.purchaseCount - a.purchaseCount;
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
-  }, [enrichedListings, query, sort, collection, license, delivery, price, fileType, compatibility, updatesOnly, verifiedOnly, minimumRating, trustByListing]);
+  }, [enrichedListings, query, sort, collection, license, delivery, price, fileType, compatibility, updatesOnly, verifiedOnly, minimumRating, offerType, freshness, previewOnly, trustByListing]);
 
   function chooseSize(nextSize: DisplaySize) {
     setSize(nextSize);
@@ -81,6 +87,9 @@ export function MarketplaceGrid({ listings, heading = "Explore offers", savedLis
     setUpdatesOnly(false);
     setVerifiedOnly(false);
     setMinimumRating("");
+    setOfferType("");
+    setFreshness("");
+    setPreviewOnly(false);
   }
 
   return (
@@ -98,12 +107,14 @@ export function MarketplaceGrid({ listings, heading = "Explore offers", savedLis
           <select aria-label="Collection" value={collection} onChange={(event) => setCollection(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800"><option value="">All collections</option>{COLLECTIONS.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select>
           <select aria-label="License type" value={license} onChange={(event) => setLicense(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800"><option value="">Any license</option><option value="personal">Personal use</option><option value="commercial">Commercial use</option><option value="extended">Extended use</option></select>
           <select aria-label="Delivery speed" value={delivery} onChange={(event) => setDelivery(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800"><option value="">Any delivery</option><option value="instant">Instant access</option><option value="day">Within a day</option><option value="week">Within a week</option></select>
+          <select aria-label="Offer type" value={offerType} onChange={(event) => setOfferType(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800"><option value="">All offer types</option><option value="digital">Digital products</option><option value="services">Creator services</option><option value="other">Subscriptions</option></select>
           <select aria-label="Sort offers" value={sort} onChange={(event) => setSort(event.target.value as Sort)} className="rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800"><option value="newest">Newest first</option><option value="popular">Most popular</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option></select>
                     <select aria-label="Price range" value={price} onChange={(event) => setPrice(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800"><option value="">Any price</option><option value="under-25">Under $25</option><option value="25-100">$25–$100</option><option value="over-100">$100+</option></select>
+          <select aria-label="New releases" value={freshness} onChange={(event) => setFreshness(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800"><option value="">Any release date</option><option value="7">Added this week</option><option value="30">Added this month</option></select>
           <select aria-label="File type" value={fileType} onChange={(event) => setFileType(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800"><option value="">Any format</option><option value="zip">ZIP</option><option value="pdf">PDF</option><option value="figma">Figma</option><option value="mp3">MP3</option><option value="video">Video</option></select>
           <select aria-label="Compatibility" value={compatibility} onChange={(event) => setCompatibility(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-800"><option value="">Any compatibility</option><option value="mac">Mac</option><option value="windows">Windows</option><option value="notion">Notion</option><option value="figma">Figma</option><option value="canva">Canva</option></select>
         </div>
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-3"><label className="inline-flex items-center gap-2 text-sm font-bold text-slate-700"><input type="checkbox" checked={updatesOnly} onChange={(event) => setUpdatesOnly(event.target.checked)} className="h-4 w-4 accent-emerald-600" /> Includes future updates</label><label className="inline-flex items-center gap-2 text-sm font-bold text-slate-700"><input type="checkbox" checked={verifiedOnly} onChange={(event) => setVerifiedOnly(event.target.checked)} className="h-4 w-4 accent-emerald-600" /> Verified sellers</label><select aria-label="Minimum rating" value={minimumRating} onChange={(event) => setMinimumRating(event.target.value)} className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold text-slate-800"><option value="">Any rating</option><option value="4">4★ & up</option><option value="4.5">4.5★ & up</option></select></div><p className="text-xs font-medium text-slate-500">Filter by format, compatibility, license, delivery, and price.</p><div className="flex items-center gap-3"><SaveSearchButton query={query} collection={collection} license={license} delivery={delivery} price={price} /><button type="button" onClick={clearFilters} className="text-sm font-bold text-emerald-800 hover:text-emerald-950">Clear filters</button></div></div>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-3"><label className="inline-flex items-center gap-2 text-sm font-bold text-slate-700"><input type="checkbox" checked={updatesOnly} onChange={(event) => setUpdatesOnly(event.target.checked)} className="h-4 w-4 accent-emerald-600" /> Includes future updates</label><label className="inline-flex items-center gap-2 text-sm font-bold text-slate-700"><input type="checkbox" checked={previewOnly} onChange={(event) => setPreviewOnly(event.target.checked)} className="h-4 w-4 accent-emerald-600" /> Has a preview</label><label className="inline-flex items-center gap-2 text-sm font-bold text-slate-700"><input type="checkbox" checked={verifiedOnly} onChange={(event) => setVerifiedOnly(event.target.checked)} className="h-4 w-4 accent-emerald-600" /> Verified sellers</label><select aria-label="Minimum rating" value={minimumRating} onChange={(event) => setMinimumRating(event.target.value)} className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold text-slate-800"><option value="">Any rating</option><option value="4">4★ & up</option><option value="4.5">4.5★ & up</option></select></div><p className="text-xs font-medium text-slate-500">Filter by type, release date, format, compatibility, license, delivery, and price.</p><div className="flex items-center gap-3"><SaveSearchButton query={query} collection={collection} license={license} delivery={delivery} price={price} /><button type="button" onClick={clearFilters} className="text-sm font-bold text-emerald-800 hover:text-emerald-950">Clear filters</button></div></div>
       </div>
 
       {visibleListings.length === 0 ? <div className="mt-5 rounded-3xl border border-slate-200 bg-white/80 p-10 text-center shadow-sm"><p className="text-lg font-bold text-slate-950">Nothing matches those filters yet.</p><p className="mt-2 text-sm text-slate-600">Try a broader search or discover another collection.</p><div className="mt-5 flex justify-center gap-3"><button type="button" onClick={clearFilters} className="button-primary">Clear filters</button><Link href="/collections" className="button-secondary">Browse collections</Link></div></div> : <div className={"mt-5 " + gridClasses[size]}>{visibleListings.map((listing, index) => <div key={listing.id} className="animate-rise" style={{ animationDelay: Math.min(index * 55, 440) + "ms" }}><ListingCard listing={listing} size={size} saved={savedListingIds.includes(listing.id)} verifiedSeller={trustByListing[listing.id]?.sellerVerified} rating={trustByListing[listing.id]?.averageRating ? { average: trustByListing[listing.id].averageRating as number, count: trustByListing[listing.id].reviewCount } : null} /></div>)}</div>}
