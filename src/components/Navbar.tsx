@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { getIdentity } from "@/lib/queries";
+import { getCommunityStats, getIdentity } from "@/lib/queries";
 import { BrandMark } from "./BrandMark";
 import { SellerSidebar } from "./SellerSidebar";
 import { SignOutButton } from "./SignOutButton";
@@ -10,7 +10,7 @@ const customerButton = "rounded-xl border border-transparent px-3 py-2 text-sm f
 
 export async function Navbar() {
   const session = await auth();
-  const identity = session?.user?.id ? await getIdentity(session.user.id) : null;
+  const [identity, community] = await Promise.all([session?.user?.id ? getIdentity(session.user.id) : Promise.resolve(null), getCommunityStats()]);
   const initial = (identity?.name ?? "P").slice(0, 1).toUpperCase();
 
   return <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-xl">
@@ -19,6 +19,7 @@ export async function Navbar() {
         <span className="grid h-10 w-10 place-items-center rounded-xl border border-emerald-200 bg-emerald-50 transition group-hover:scale-105"><BrandMark className="h-8 w-8" /></span>
         <span className="hidden sm:inline">vennet</span>
       </Link>
+      <div className="hidden items-center gap-1.5 2xl:flex" aria-label="Vennet community totals"><span className="rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-black text-slate-600">{community.total} members</span><span className="rounded-lg bg-sky-50 px-2 py-1 text-[10px] font-black text-sky-700">{community.verified} verified</span><span className="rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-700">{community.pro} pro</span></div>
       <div className="order-3 basis-full md:order-none md:min-w-48 md:flex-1"><SiteSearch /></div>
       <nav aria-label="Customer navigation" className="hidden shrink-0 items-center gap-1 xl:flex">
         <Link href="/marketplace" className={customerButton}>Explore</Link>
