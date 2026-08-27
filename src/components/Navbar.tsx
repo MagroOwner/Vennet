@@ -22,7 +22,7 @@ export async function Navbar() {
       <div className="hidden items-center gap-1.5 2xl:flex" aria-label="Vennet community totals"><span className="rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-black text-slate-600">{community.total} members</span><span className="rounded-lg bg-sky-50 px-2 py-1 text-[10px] font-black text-sky-700">{community.verified} verified</span><span className="rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-700">{community.pro} pro</span></div>
       <div className="order-3 basis-full md:order-none md:min-w-48 md:flex-1"><SiteSearch /></div>
       <nav aria-label="Customer navigation" className="hidden shrink-0 items-center gap-1 xl:flex">
-        <Link href="/marketplace" className={customerButton}>Explore</Link>
+        <Link href="/marketplace" className={customerButton}>Marketplace</Link>
         <Link href="/collections" className={customerButton}>Categories</Link>
         <Link href="/discover" className={customerButton}>Discover</Link>
         {session && <><Link href="/inventory" className={customerButton}>My library</Link><Link href="/saved" className={customerButton}>Saved</Link><Link href="/help" className={customerButton}>Help</Link></>}
