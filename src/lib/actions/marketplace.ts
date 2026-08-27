@@ -383,3 +383,38 @@ export async function purchaseCart(): Promise<ActionResult<{ url: string }>> {
     return { ok: true, url: checkout.url };
   } catch (error) { return failure(error); }
 }
+
+
+const listingVisibilitySchema = z.object({
+  listingId: z.string().uuid("Listing not found."),
+  visible: z.boolean(),
+});
+
+export async function setListingVisibility(
+  input: z.input<typeof listingVisibilitySchema>
+): Promise<ActionResult<{ listingId: string; visible: boolean }>> {
+  try {
+    const { userId } = await requireAuth();
+    const { listingId, visible } = listingVisibilitySchema.parse(input);
+    const [listing] = await db
+      .select({ id: listings.id, sellerId: listings.sellerId, status: listings.status })
+      .from(listings)
+      .where(and(eq(listings.id, listingId), eq(listings.sellerId, userId)))
+      .limit(1);
+
+    if (!listing) throw new ActionError("You can only manage your own listings.");
+    if (listing.status === "suspended") throw new ActionError("This listing is suspended and cannot be changed here.");
+
+    await db
+      .update(listings)
+      .set({ status: visible ? "active" : "draft", updatedAt: new Date() })
+      .where(eq(listings.id, listing.id));
+
+    revalidatePath("/marketplace");
+    revalidatePath("/marketplace/" + listing.id);
+    revalidatePath("/dashboard/seller");
+    return { ok: true, listingId: listing.id, visible };
+  } catch (error) {
+    return failure(error);
+  }
+}
