@@ -82,7 +82,7 @@ export async function createListing(
     if (!stripeAccount?.chargesEnabled || !stripeAccount.payoutsEnabled) {
       throw new ActionError("Connect and complete Stripe onboarding before creating a listing.");
     }
-    if (data.category === "digital" && data.deliveryFilePaths.length === 0) {
+    if (data.category === "digital" && data.deliveryFilePaths.length === 0 && data.collection !== "bots-automations") {
       throw new ActionError("Upload at least one downloadable file for a digital product.");
     }
     if (data.collection === "bots-automations" && !data.automationAccessUrl) {
@@ -185,7 +185,7 @@ export async function updateListing(
       .where(eq(identities.userId, userId))
       .limit(1);
     if (!identity) throw new ActionError("Create a Vennet identity before editing listings.");
-    if (data.category === "digital" && data.deliveryFilePaths.length === 0) {
+    if (data.category === "digital" && data.deliveryFilePaths.length === 0 && data.collection !== "bots-automations") {
       throw new ActionError("Upload at least one downloadable file for a digital product.");
     }
     if (data.collection === "bots-automations" && !data.automationAccessUrl) {
