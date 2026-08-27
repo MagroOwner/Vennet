@@ -103,8 +103,12 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
-    if (category === "digital" && deliveryFiles.length === 0) {
+    if (category === "digital" && deliveryFiles.length === 0 && collection !== "bots-automations") {
       setError("Upload at least one file that the buyer receives.");
+      return;
+    }
+    if (collection === "bots-automations" && !automationAccessUrl.trim()) {
+      setError("Add the working bot or automation access link.");
       return;
     }
     setBusy(true);
@@ -200,8 +204,8 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
         <h2 className="text-base font-extrabold text-slate-950">Buyer delivery and support</h2>
         <p className="mt-1 text-sm text-slate-700">This information is shown to a buyer after payment. Keep it current while your listing is active.</p>
         {category === "digital" && <div className="mt-5 rounded-xl border border-emerald-200 bg-white p-4">
-          <label className="block text-sm font-bold text-slate-950">Files the buyer receives</label>
-          <p className="mt-1 text-sm leading-5 text-slate-700">Required for digital products. Upload up to eight files, or use a ZIP file for a folder. Only verified buyers can download them after payment.</p>
+          <label className="block text-sm font-bold text-slate-950">{collection === "bots-automations" ? "Bot files (optional)" : "Files the buyer receives"}</label>
+          <p className="mt-1 text-sm leading-5 text-slate-700">{collection === "bots-automations" ? "Upload source code, configuration files, or documentation when included. Hosted bots may use the required access link below instead." : "Required for digital products. Upload up to eight files, or use a ZIP file for a folder. Only verified buyers can download them after payment."}</p>
           <input type="file" multiple onChange={(e) => e.target.files && uploadDeliveryFiles(e.target.files)} className="mt-3 block w-full text-sm font-medium text-slate-800" />
           {deliveryFiles.length > 0 && <ul className="mt-3 space-y-2">{deliveryFiles.map((file) => <li key={file.pathname} className="flex items-center justify-between gap-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-950"><span className="min-w-0 truncate">✓ {file.name}</span><button type="button" onClick={() => setDeliveryFiles((current) => current.filter((item) => item.pathname !== file.pathname))} className="shrink-0 text-emerald-800 underline hover:text-emerald-950">Remove</button></li>)}</ul>}
         </div>}
