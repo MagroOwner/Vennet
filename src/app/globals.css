@@ -7,6 +7,7 @@
 * { border-color: rgb(255 255 255 / 0.09); }
 html { scroll-behavior: smooth; font-size: 17px; }
 a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid rgb(16 185 129 / 0.65); outline-offset: 3px; }
+.site-search-input:focus-visible { outline: none; }
 body {
   min-height: 100vh;
   color: var(--foreground);
