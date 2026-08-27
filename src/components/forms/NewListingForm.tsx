@@ -52,6 +52,7 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
   const [compatibility, setCompatibility] = useState(listing?.compatibility ?? "");
   const [includesUpdates, setIncludesUpdates] = useState(listing?.includesUpdates ?? false);
   const [updatePolicy, setUpdatePolicy] = useState(listing?.updatePolicy ?? "");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +112,10 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
       setError("Add the working bot or automation access link.");
       return;
     }
+    if (!termsAccepted) {
+      setError("Please agree to the Terms of Service before publishing.");
+      return;
+    }
     setBusy(true);
     try {
       const input = {
@@ -132,6 +137,7 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
         compatibility,
         includesUpdates,
         updatePolicy,
+        termsAccepted,
       };
       const result = listing
         ? await updateListing({ ...input, listingId: listing.id })
@@ -228,6 +234,7 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
         </div>
       </section>
 
+      <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-700"><input required type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} className="mt-1 h-4 w-4 accent-emerald-600" /><span>I agree to the <a href="/terms" target="_blank" rel="noreferrer" className="font-bold text-emerald-800 underline">Terms of Service</a> and confirm that this listing is accurate, lawful, and ready for buyer delivery.</span></label>
       {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">{error}</p>}
       <button type="submit" disabled={busy || uploading} className="button-primary w-full disabled:opacity-50">{busy ? (isEditing ? "Saving…" : "Publishing…") : (isEditing ? "Save listing changes" : "Publish listing")}</button>
     </form>
