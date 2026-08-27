@@ -167,7 +167,7 @@ const updateListingSchema = createListingSchema.extend({
 
 export async function updateListing(
   input: z.input<typeof updateListingSchema>
-): Promise<ActionResult<{ listingId: string }>> {
+): Promise<ActionResult<{ listingId: string; published: boolean }>> {
   try {
     const { userId } = await requireAuth();
     const data = updateListingSchema.parse(input);
@@ -257,7 +257,7 @@ export async function updateListing(
     revalidatePath("/marketplace/" + listing.id);
     revalidatePath("/marketplace/" + listing.id + "/edit");
     revalidatePath("/dashboard/seller");
-    return { ok: true, listingId: listing.id };
+    return { ok: true, listingId: listing.id, published: listing.status === "active" };
   } catch (error) {
     return failure(error);
   }
