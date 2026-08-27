@@ -50,6 +50,7 @@ const createListingSchema = z.object({
   compatibility: z.string().trim().max(300).default(""),
   includesUpdates: z.boolean().default(false),
   updatePolicy: z.string().trim().max(1000).default(""),
+  termsAccepted: z.literal(true, { errorMap: () => ({ message: "You must agree to the Terms of Service." }) }),
 });
 
 function deliveryDetails(data: z.infer<typeof createListingSchema>) {
@@ -264,7 +265,15 @@ export async function updateListing(
   }
 }
 
-const purchaseSchema = z.object({ listingId: z.string().uuid("listingId is required."), couponCode: z.string().trim().toUpperCase().max(32).optional() });
+const purchaseSchema = z.object({
+  listingId: z.string().uuid("listingId is required."),
+  couponCode: z.string().trim().toUpperCase().max(32).optional(),
+  termsAccepted: z.literal(true, { errorMap: () => ({ message: "You must agree to the Terms of Service before purchase." }) }),
+});
+
+const purchaseCartSchema = z.object({
+  termsAccepted: z.literal(true, { errorMap: () => ({ message: "You must agree to the Terms of Service before purchase." }) }),
+});
 
 export async function purchaseListing(
   input: z.input<typeof purchaseSchema>
@@ -284,7 +293,7 @@ export async function purchaseListing(
     if (listing.status !== "active") {
       throw new ActionError("Listing is not available.");
     }
-    if (!listing.deliveryInstructions || !listing.supportContact || (listing.category === "digital" && listing.deliveryFilePaths.length === 0)) {
+    if (!listing.deliveryInstructions || !listing.supportContact || (listing.category === "digital" && listing.deliveryFilePaths.length === 0 && listing.collection !== "bots-automations")) {
       throw new ActionError("This listing is missing required delivery information and cannot be purchased yet.");
     }
     if (listing.sellerId === userId) {
@@ -367,9 +376,12 @@ export async function purchaseListing(
   }
 }
 
-export async function purchaseCart(): Promise<ActionResult<{ url: string }>> {
+export async function purchaseCart(
+  input: z.input<typeof purchaseCartSchema>
+): Promise<ActionResult<{ url: string }>> {
   try {
     const { userId } = await requireAuth();
+    purchaseCartSchema.parse(input);
     const rows = await db.select({ listing: listings }).from(cartItems).innerJoin(listings, eq(cartItems.listingId, listings.id)).where(eq(cartItems.userId, userId));
     const cartListings = rows.map((row) => row.listing);
     if (!cartListings.length) throw new ActionError("Your cart is empty.");
