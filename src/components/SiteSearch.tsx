@@ -31,7 +31,7 @@ export function SiteSearch() {
 
   return <form onSubmit={findPage} className="min-w-0">
     <label className="sr-only" htmlFor="site-search">Find a Vennet page</label>
-    <div className="flex items-center rounded-2xl border border-slate-300 bg-slate-50 px-3 shadow-inner shadow-slate-900/[0.03] transition focus-within:border-emerald-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-emerald-100">
+    <div className="flex items-center rounded-2xl border border-slate-300 bg-slate-50 px-3 shadow-inner shadow-slate-900/[0.03]">
       <span aria-hidden="true" className="mr-2 text-slate-400">⌕</span>
       <input id="site-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a page or tool" className="min-w-0 flex-1 border-0 bg-transparent px-0 py-2.5 text-sm font-medium !text-slate-900 outline-none placeholder:!text-slate-500" />
       <button type="submit" className="ml-2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[10px] font-black text-slate-600 transition hover:border-emerald-300 hover:text-emerald-800">GO</button>
