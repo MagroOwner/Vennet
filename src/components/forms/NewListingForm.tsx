@@ -19,6 +19,16 @@ function fileName(pathname: string) {
   return pathname.split("/").pop() || "Uploaded file";
 }
 
+const AUTOMATION_ACCESS_LABEL = "Automation access link:";
+
+function accessUrlFromInstructions(instructions: string) {
+  return instructions.match(new RegExp(AUTOMATION_ACCESS_LABEL + "\\s*(https?://\\S+)", "i"))?.[1] ?? "";
+}
+
+function instructionsWithoutAccessUrl(instructions: string) {
+  return instructions.replace(new RegExp("\\s*" + AUTOMATION_ACCESS_LABEL + "\\s*https?://\\S+\\s*", "ig"), "\n").trim();
+}
+
 export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: Listing }) {
   const router = useRouter();
   const isEditing = Boolean(listing);
@@ -30,7 +40,8 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
   const [deliveryFiles, setDeliveryFiles] = useState<DeliveryFile[]>(
     (listing?.deliveryFilePaths ?? []).map((pathname) => ({ pathname, name: fileName(pathname) }))
   );
-  const [deliveryInstructions, setDeliveryInstructions] = useState(listing?.deliveryInstructions ?? "");
+  const [deliveryInstructions, setDeliveryInstructions] = useState(instructionsWithoutAccessUrl(listing?.deliveryInstructions ?? ""));
+  const [automationAccessUrl, setAutomationAccessUrl] = useState(accessUrlFromInstructions(listing?.deliveryInstructions ?? ""));
   const [supportContact, setSupportContact] = useState(listing?.supportContact ?? "");
   const [collection, setCollection] = useState(listing?.collection ?? "");
   const [tags, setTags] = useState((listing?.tags ?? []).join(", "));
@@ -106,6 +117,7 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
         imageUrls,
         deliveryFilePaths: deliveryFiles.map((file) => file.pathname),
         deliveryInstructions,
+        automationAccessUrl,
         supportContact,
         collection,
         tags: tags.split(",").map((tag) => tag.trim()).filter(Boolean),
@@ -201,6 +213,11 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
           <label className="mb-1.5 block text-sm font-bold text-slate-900">Buyer access details</label>
           <textarea required rows={4} placeholder={category === "digital" ? "Explain what the files contain and how the buyer should use them." : "Explain exactly how the buyer accesses the service or subscription after purchase."} value={deliveryInstructions} onChange={(e) => setDeliveryInstructions(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white" />
         </div>
+        {collection === "bots-automations" && <div className="mt-5 rounded-xl border border-emerald-200 bg-white p-4">
+          <label className="mb-1.5 block text-sm font-extrabold text-slate-950">Bot or automation access link</label>
+          <p className="mb-3 text-sm leading-5 text-slate-700">Required. Add the working Discord bot invite, dashboard, download, workflow copy, or other link the buyer needs after payment. Do not put tokens or passwords in this field.</p>
+          <input required type="url" value={automationAccessUrl} onChange={(e) => setAutomationAccessUrl(e.target.value)} placeholder="https://discord.com/oauth2/authorize?…" className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white" />
+        </div>}
         <div className="mt-5">
           <label className="mb-1.5 block text-sm font-bold text-slate-900">Seller support contact</label>
           <input required placeholder="Support email, Discord invite, help desk URL, or other contact method" value={supportContact} onChange={(e) => setSupportContact(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-950 px-3 py-2.5 text-white" />
