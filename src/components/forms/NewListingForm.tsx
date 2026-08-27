@@ -146,7 +146,7 @@ export function NewListingForm({ isPro, listing }: { isPro: boolean; listing?: L
         setError(result.error);
         return;
       }
-      router.push(isEditing ? "/dashboard/seller" : "/marketplace/" + result.listingId);
+      router.push(isEditing || !result.published ? "/dashboard/seller" : "/marketplace/" + result.listingId);
       router.refresh();
     } finally {
       setBusy(false);
