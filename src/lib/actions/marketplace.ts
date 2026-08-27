@@ -61,7 +61,7 @@ function deliveryDetails(data: z.infer<typeof createListingSchema>) {
 
 export async function createListing(
   input: z.input<typeof createListingSchema>
-): Promise<ActionResult<{ listingId: string }>> {
+): Promise<ActionResult<{ listingId: string; published: boolean }>> {
   try {
     const { userId } = await requireAuth();
     const data = createListingSchema.parse(input);
@@ -80,9 +80,7 @@ export async function createListing(
       .from(stripeAccounts)
       .where(eq(stripeAccounts.userId, userId))
       .limit(1);
-    if (!stripeAccount?.chargesEnabled || !stripeAccount.payoutsEnabled) {
-      throw new ActionError("Connect and complete Stripe onboarding before creating a listing.");
-    }
+    const payoutsReady = Boolean(stripeAccount?.chargesEnabled && stripeAccount.payoutsEnabled);
     if (data.category === "digital" && data.deliveryFilePaths.length === 0 && data.collection !== "bots-automations") {
       throw new ActionError("Upload at least one downloadable file for a digital product.");
     }
@@ -145,7 +143,7 @@ export async function createListing(
         compatibility: data.compatibility,
         includesUpdates: data.includesUpdates,
         updatePolicy: data.updatePolicy,
-        status: "active",
+        status: payoutsReady ? "active" : "draft",
       })
       .returning({ id: listings.id });
 
@@ -156,7 +154,7 @@ export async function createListing(
     await logActivity(userId, "listing_created", { listingId: listing.id });
     revalidatePath("/marketplace");
     revalidatePath("/dashboard/seller");
-    return { ok: true, listingId: listing.id };
+    return { ok: true, listingId: listing.id, published: payoutsReady };
   } catch (error) {
     return failure(error);
   }
