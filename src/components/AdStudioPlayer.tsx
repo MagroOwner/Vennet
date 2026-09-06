@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 
 const scenes = [
   {
@@ -55,7 +55,7 @@ export function AdStudioPlayer() {
 
       <div className="grid gap-7 p-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:p-8">
         <div className="flex justify-center rounded-[1.75rem] bg-[radial-gradient(circle_at_50%_0%,#d1fae5,transparent_45%),linear-gradient(145deg,#effcf6,#f8fafc)] p-5 sm:p-9">
-          <div className="ad-phone relative w-full max-w-[350px] overflow-hidden rounded-[2.35rem] border-[7px] border-slate-950 bg-slate-950 shadow-2xl shadow-slate-950/30" style={{ "--play": paused ? "paused" : "running" } as React.CSSProperties}>
+          <div className="ad-phone relative w-full max-w-[350px] overflow-hidden rounded-[2.35rem] border-[7px] border-slate-950 bg-slate-950 shadow-2xl shadow-slate-950/30" style={{ "--play": paused ? "paused" : "running" } as CSSProperties}>
             <div className="absolute left-1/2 top-3 z-20 h-5 w-28 -translate-x-1/2 rounded-full bg-slate-950" />
             <div className="relative aspect-[9/16] overflow-hidden rounded-[1.85rem] bg-slate-950 px-6 pb-7 pt-11 text-white">
               <div className="orb orb-one" /><div className="orb orb-two" /><div className="grid-lines" />
