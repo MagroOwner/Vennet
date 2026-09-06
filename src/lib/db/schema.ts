@@ -146,6 +146,18 @@ export const emailVerificationTokens = pgTable(
   })
 );
 
+export const passwordResetTokens = pgTable(
+  "password_reset_tokens",
+  {
+    email: text("email").primaryKey(),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({ expiresIdx: index("password_reset_tokens_expires_idx").on(table.expiresAt) })
+);
+
 export const roles = pgTable("roles", {
   userId: uuid("user_id")
     .primaryKey()
