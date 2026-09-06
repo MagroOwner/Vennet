@@ -35,6 +35,7 @@ project settings for production.
 | `SENDGRID_API_KEY` | Secret API key used to send email-verification codes |
 | `SENDGRID_FROM_EMAIL` | Verified SendGrid sender email address |
 | `SENDGRID_FROM_NAME` | Display name for verification emails |
+| `AD_STUDIO_OWNER_EMAIL` | Email address allowed to open the private `/studio/ads` recording page |
 
 Google OAuth redirect URI: `<NEXTAUTH_URL>/api/auth/callback/google`.
 
