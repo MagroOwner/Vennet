@@ -50,7 +50,7 @@ const createListingSchema = z.object({
   compatibility: z.string().trim().max(300).default(""),
   includesUpdates: z.boolean().default(false),
   updatePolicy: z.string().trim().max(1000).default(""),
-  termsAccepted: z.literal(true, { errorMap: () => ({ message: "You must agree to the Terms of Service." }) }),
+  termsAccepted: z.literal(true, { error: "You must agree to the Terms of Service." }),
 });
 
 function deliveryDetails(data: z.infer<typeof createListingSchema>) {
@@ -266,11 +266,11 @@ export async function updateListing(
 const purchaseSchema = z.object({
   listingId: z.string().uuid("listingId is required."),
   couponCode: z.string().trim().toUpperCase().max(32).optional(),
-  termsAccepted: z.literal(true, { errorMap: () => ({ message: "You must agree to the Terms of Service before purchase." }) }),
+  termsAccepted: z.literal(true, { error: "You must agree to the Terms of Service before purchase." }),
 });
 
 const purchaseCartSchema = z.object({
-  termsAccepted: z.literal(true, { errorMap: () => ({ message: "You must agree to the Terms of Service before purchase." }) }),
+  termsAccepted: z.literal(true, { error: "You must agree to the Terms of Service before purchase." }),
 });
 
 export async function purchaseListing(
