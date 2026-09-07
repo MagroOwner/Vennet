@@ -11,9 +11,7 @@ const categories = [
 
 export function CategoryFilter({ value }: { value: string }) {
   const router = useRouter();
-  return (
-    <select value={value} onChange={(event) => router.push(event.target.value ? `/marketplace?category=${event.target.value}` : "/marketplace")} className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm">
-      {categories.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}
-    </select>
-  );
+  return <select value={value} onChange={(event) => router.push(event.target.value ? `/marketplace?category=${event.target.value}` : "/marketplace")} className="min-h-11 rounded-xl border border-white/20 bg-white px-3 py-2 text-sm font-bold text-slate-800 shadow-sm outline-none transition focus:border-emerald-300 focus:ring-2 focus:ring-emerald-300">
+    {categories.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}
+  </select>;
 }
