@@ -107,7 +107,7 @@ export function LoginForm({ googleEnabled, initialMode = "signin" }: { googleEna
                 ? "Enter the code we sent before we create your Vennet account."
                 : "Join the marketplace built for digital creators. We will verify that you own this email address."}
           </p>
-          <form onSubmit={submit} className="mt-7 space-y-4">
+          <div className="mt-7">{googleEnabled && !verifying && <div className="mb-4 flex items-center gap-3 text-xs font-bold uppercase tracking-[.14em] text-slate-400"><span className="h-px flex-1 bg-slate-200" />or continue with email<span className="h-px flex-1 bg-slate-200" /></div>}</div><form onSubmit={submit} className="space-y-4">
             {!verifying && <>
               <div><label className="mb-1.5 block text-sm font-semibold text-slate-800">Email</label><input type="email" required placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-slate-950 shadow-sm outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200" /></div>
               <div><label className="mb-1.5 block text-sm font-semibold text-slate-800">Password</label><input type="password" required minLength={8} placeholder="At least 8 characters" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-xl border border-slate-700 bg-zinc-900 px-3.5 py-3" /></div>
