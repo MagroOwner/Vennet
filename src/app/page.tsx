@@ -6,15 +6,6 @@ import { getActiveListings, getListingTrust } from "@/lib/queries";
 import { COLLECTIONS } from "@/lib/collections";
 import { CollectionIcon } from "@/components/CollectionIcon";
 
-const categories = [
-  { icon: "✦", title: "Design", detail: "UI kits, brand systems, and creative assets", href: "/collections/design", color: "bg-rose-50 text-rose-700" },
-  { icon: "▦", title: "Templates", detail: "Ready-to-use systems that save hours", href: "/collections/templates", color: "bg-amber-50 text-amber-800" },
-  { icon: "</>", title: "Code", detail: "Components, scripts, and developer tools", href: "/collections/code", color: "bg-emerald-50 text-emerald-800" },
-  { icon: "⌘", title: "Bots & Automations", detail: "Discord bots, integrations, and workflows", href: "/collections/bots-automations", color: "bg-lime-50 text-lime-800" },
-  { icon: "✳", title: "AI tools", detail: "Prompts, workflows, and creator systems", href: "/collections/ai-tools", color: "bg-orange-50 text-orange-800" },
-  { icon: "◎", title: "Education", detail: "Courses, guides, and practical playbooks", href: "/collections/education", color: "bg-stone-100 text-stone-700" },
-];
-
 const trustItems = [
   ["Clear delivery", "Know what you receive, when you receive it, and how to get support."],
   ["Creator-led work", "Discover digital products and services from independent creators."],
