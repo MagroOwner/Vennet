@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   openGraph: { type: "website", locale: "en_US", url: siteUrl, siteName: "Vennet", title: "Vennet | Digital work worth owning", description: "Buy and sell useful digital work from independent creators." },
   twitter: { card: "summary_large_image", title: "Vennet | Digital work worth owning", description: "Buy and sell useful digital work from independent creators." },
   robots: { index: true, follow: true },
+  icons: { icon: [{ url: "/icon", type: "image/png", sizes: "96x96" }], apple: [{ url: "/icon", type: "image/png", sizes: "96x96" }] },
 };
 
 const footerColumns = [
