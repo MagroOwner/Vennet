@@ -1,29 +1,16 @@
 import type { ReputationLevel, VerificationStatus } from "@/lib/types";
 
 export function VerifiedBadge({ status }: { status: VerificationStatus }) {
-  if (status === "verified") {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-sky-600/20 px-2 py-0.5 text-xs font-medium text-sky-400">
-        ✓ Verified
-      </span>
-    );
-  }
-  if (status === "pending") {
-    return (
-      <span className="inline-flex items-center rounded-full bg-amber-600/20 px-2 py-0.5 text-xs font-medium text-amber-400">
-        Pending review
-      </span>
-    );
-  }
-  return null;
+  if (status !== "verified") return null;
+  return <span className="inline-flex items-center gap-1 rounded-full bg-emerald-300 px-2.5 py-1 text-xs font-black text-emerald-950">✓ Verified seller</span>;
 }
 
 const LEVEL_COLORS: Record<ReputationLevel, string> = {
-  new: "bg-zinc-600/30 text-zinc-300",
-  bronze: "bg-orange-800/30 text-orange-300",
-  silver: "bg-slate-500/30 text-slate-200",
-  gold: "bg-yellow-600/30 text-yellow-300",
-  platinum: "bg-cyan-500/30 text-cyan-200",
+  new: "bg-slate-200 text-slate-700",
+  bronze: "bg-orange-100 text-orange-800",
+  silver: "bg-stone-200 text-stone-700",
+  gold: "bg-amber-100 text-amber-900",
+  platinum: "bg-emerald-100 text-emerald-800",
 };
 
 export function ReputationBadge({
@@ -33,11 +20,5 @@ export function ReputationBadge({
   score: number;
   level: ReputationLevel;
 }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${LEVEL_COLORS[level]}`}
-    >
-      {score} · {level}
-    </span>
-  );
+  return <span className={"inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold " + LEVEL_COLORS[level]}>{score} reputation · {level}</span>;
 }
