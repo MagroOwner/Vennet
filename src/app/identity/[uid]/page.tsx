@@ -87,7 +87,6 @@ export default async function IdentityPage({ params }: { params: { uid: string }
             <div><p className="text-3xl font-black text-emerald-300">{sales.filter((sale) => sale.status === "paid").length}</p><p className="mt-1 text-sm text-slate-300">Verified sales</p></div>
             <div><p className="text-lg font-black text-emerald-300">{profile.responseTimeHours ? "≈ " + profile.responseTimeHours + "h" : "—"}</p><p className="mt-1 text-sm text-slate-300">Response time</p></div>
           </div>
-          <p className="mt-7 border-t border-white/10 pt-4 text-sm text-slate-300">Member since {identity.createdAt.toLocaleDateString()}</p>
         </aside>
       </section>
 
