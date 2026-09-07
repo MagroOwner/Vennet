@@ -7,6 +7,11 @@ import { LISTING_CATEGORIES, type ListingCategory } from "@/lib/types";
 import { getCollection } from "@/lib/collections";
 
 export const dynamic = "force-dynamic";
+export const metadata = {
+  title: "Digital marketplace for tools, templates, code, bots, and AI work",
+  description: "Browse digital products from independent creators: templates, UI kits, code components, Discord bots, automations, AI tools, education, and creator services.",
+  alternates: { canonical: "/marketplace" },
+};
 function parseCategory(value: string | undefined): ListingCategory | undefined { return LISTING_CATEGORIES.find((category) => category === value); }
 
 export default async function MarketplacePage({ searchParams }: { searchParams: { category?: string; collection?: string; q?: string; license?: string; delivery?: string; price?: string } }) {
