@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { AdRecordView } from "@/components/AdRecordView";
-import { AD_SCENES } from "@/components/AdScene";
+import { AD_SCENES } from "@/lib/ad-scenes";
 import { AdStudioPlayer } from "@/components/AdStudioPlayer";
 import { requireSession } from "@/lib/session";
 

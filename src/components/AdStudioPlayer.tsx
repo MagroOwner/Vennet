@@ -14,7 +14,7 @@ export function AdStudioPlayer() {
         <div>
           <p className="text-xs font-black uppercase tracking-[.2em] text-emerald-700">Private recording studio</p>
           <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950">Vennet Edit Clips</h1>
-          <p className="mt-1 text-sm text-slate-500">Four punchy vertical scenes built to cut together—not stock business footage.</p>
+          <p className="mt-1 text-sm text-slate-500">{AD_SCENES.length} punchy vertical scenes built to cut together—not stock business footage.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={() => setPaused((value) => !value)} className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-800 transition hover:border-emerald-300 hover:text-emerald-800">
@@ -38,7 +38,7 @@ export function AdStudioPlayer() {
           <p className="text-xs font-black uppercase tracking-[.18em] text-slate-500">Choose your clips</p>
           <div className="mt-3 space-y-2">
             {AD_SCENES.map((item, index) => <button key={item.title} type="button" onClick={() => setActiveScene(index)} className={"w-full rounded-2xl border p-4 text-left transition " + (index === activeScene ? "border-emerald-300 bg-emerald-50 shadow-sm" : "border-slate-200 bg-white hover:border-emerald-200")}>
-              <span className="text-xs font-black text-emerald-700">0{index + 1}</span>
+              <span className="text-xs font-black text-emerald-700">{String(index + 1).padStart(2, "0")}</span>
               <span className="mt-1 block font-black text-slate-950">{item.title}</span>
               <span className="mt-1 block text-xs leading-5 text-slate-500">{item.caption}</span>
             </button>)}
