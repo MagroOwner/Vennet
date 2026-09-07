@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { BrandMark } from "@/components/BrandMark";
 import { ListingCard } from "@/components/ListingCard";
 import { getActiveListings, getListingTrust } from "@/lib/queries";
+import { COLLECTIONS } from "@/lib/collections";
+import { CollectionIcon } from "@/components/CollectionIcon";
 
 const categories = [
   { icon: "✦", title: "Design", detail: "UI kits, brand systems, and creative assets", href: "/collections/design", color: "bg-rose-50 text-rose-700" },
@@ -50,7 +52,7 @@ export default async function HomePage() {
 
     <section className="surface-card p-6 sm:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="eyebrow">Browse by category</p><h2 className="mt-2 text-3xl font-black tracking-[-.04em] text-[#10151f]">Start with what you need.</h2></div><Link href="/collections" className="button-secondary px-4 py-2.5 text-sm">All categories →</Link></div>
-      <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{categories.map((category) => <Link key={category.title} href={category.href} className="group flex items-start gap-4 rounded-2xl border border-slate-200 bg-[#fbfcfb] p-4 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-white hover:shadow-lg hover:shadow-slate-900/[.05]"><span className={"grid h-11 w-11 shrink-0 place-items-center rounded-xl text-lg font-black " + category.color}>{category.icon}</span><div><h3 className="font-black text-[#10151f]">{category.title}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{category.detail}</p><span className="mt-2 inline-block text-xs font-black text-emerald-800">Explore →</span></div></Link>)}</div>
+      <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{COLLECTIONS.map((category) => <Link key={category.slug} href={"/collections/" + category.slug} className="group flex items-start gap-4 rounded-2xl border border-slate-200 bg-[#fbfcfb] p-4 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-white hover:shadow-lg hover:shadow-slate-900/[.05]"><span className={"grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br text-slate-800 " + category.accent}><CollectionIcon collection={category} /></span><div><h3 className="font-black text-[#10151f]">{category.name}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{category.description}</p><span className="mt-2 inline-block text-xs font-black text-emerald-800">Explore →</span></div></Link>)}</div>
     </section>
 
     <section>
