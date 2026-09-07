@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ReputationBadge, VerifiedBadge } from "@/components/Badges";
@@ -15,9 +16,11 @@ import { formatPrice } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const listing = await getListing(params.id);
-  return { title: listing ? listing.title + " | Vennet" : "Offer not found | Vennet", description: listing?.description?.slice(0, 155) ?? "Discover digital work on Vennet." };
+  if (!listing) return { title: "Offer not found" };
+  const description = listing.description.slice(0, 155) || "Discover useful digital work on Vennet.";
+  return { title: listing.title, description, openGraph: { title: listing.title + " | Vennet", description, images: listing.imageUrls[0] ? [{ url: listing.imageUrls[0] }] : undefined }, twitter: { card: "summary_large_image", title: listing.title + " | Vennet", description } };
 }
 
 export default async function ListingPage({ params }: { params: { id: string } }) {
