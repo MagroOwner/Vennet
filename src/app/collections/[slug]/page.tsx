@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ListingCard } from "@/components/ListingCard";
@@ -6,6 +7,14 @@ import { auth } from "@/lib/auth";
 import { getActiveListings, getSavedListingIds } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
+
+export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
+  const collection = getCollection(params.slug);
+  if (!collection) return { title: "Category not found" };
+  const title = collection.name + " marketplace";
+  const description = "Browse " + collection.description.toLowerCase() + " on Vennet's digital marketplace.";
+  return { title, description, alternates: { canonical: "/collections/" + collection.slug }, openGraph: { title: title + " | Vennet", description } };
+}
 
 export default async function CollectionPage({ params }: { params: { slug: string } }) {
   const collection = getCollection(params.slug);
