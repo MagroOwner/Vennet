@@ -12,6 +12,30 @@ const trustItems = [
   ["Secure checkout", "Pay through Stripe and keep purchase details together in your library."],
 ];
 
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      name: "Vennet",
+      url: "https://vennetofficial.vercel.app",
+      description: "A digital marketplace for templates, tools, code, AI workflows, bots, automations, and creator services.",
+      potentialAction: {
+        "@type": "SearchAction",
+        target: "https://vennetofficial.vercel.app/marketplace?q={search_term_string}",
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "Organization",
+      name: "Vennet",
+      url: "https://vennetofficial.vercel.app",
+      logo: "https://vennetofficial.vercel.app/icon",
+      description: "Vennet helps creators sell digital work and helps buyers discover useful digital products.",
+    },
+  ],
+};
+
 export default async function HomePage() {
   const session = await auth();
   const sellHref = session ? "/dashboard/seller" : "/signup?next=/dashboard/seller";
@@ -20,7 +44,7 @@ export default async function HomePage() {
   const featured = [...listings].sort((a, b) => Number(b.featured) - Number(a.featured) || b.purchaseCount - a.purchaseCount).slice(0, 4);
   const trustByListing = await getListingTrust(featured);
 
-  return <div className="space-y-14 pb-10 sm:space-y-20">
+  return <div className="space-y-14 pb-10 sm:space-y-20"><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
     <section className="relative overflow-hidden rounded-[2rem] bg-[#10151f] px-6 py-12 text-white shadow-[0_24px_60px_rgb(16_21_31/.18)] sm:px-10 lg:px-14 lg:py-16">
       <div className="absolute -right-24 -top-24 h-[28rem] w-[28rem] rounded-full bg-emerald-400/20 blur-3xl" />
       <div className="absolute bottom-[-12rem] right-[30%] h-80 w-80 rounded-full bg-amber-200/10 blur-3xl" />
