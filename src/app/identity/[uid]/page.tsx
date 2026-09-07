@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FollowCreatorButton } from "@/components/FollowCreatorButton";
@@ -8,6 +9,13 @@ import { getCreatorFollowerCount, getIdentity, getReputationScore, getSales, get
 import { levelForScore } from "@/lib/services/reputation";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { uid: string } }): Promise<Metadata> {
+  const identity = await getIdentity(params.uid);
+  if (!identity) return { title: "Creator not found" };
+  const description = identity.bio || "Browse this creator’s digital storefront on Vennet.";
+  return { title: identity.name + " — creator storefront", description, openGraph: { title: identity.name + " | Vennet", description, images: identity.avatarUrl ? [{ url: identity.avatarUrl }] : undefined } };
+}
 
 export default async function IdentityPage({ params }: { params: { uid: string } }) {
   const identity = await getIdentity(params.uid);
