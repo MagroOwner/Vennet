@@ -271,3 +271,27 @@ export async function getCommunityStats(): Promise<{ total: number; pro: number;
   ]);
   return { total: members.length, pro: proMembers.length, verified: verifiedMembers.length };
 }
+
+
+export async function getAdminOverview() {
+  const [memberRows, identityRows, listingRows, transactionRows, accountRows] = await Promise.all([
+    db.select({ id: users.id, isPro: users.isPro, disabled: users.disabled }).from(users),
+    db.select({ userId: identities.userId, verificationStatus: identities.verificationStatus }).from(identities),
+    db.select({ id: listings.id, status: listings.status }).from(listings),
+    db.select({ id: transactions.id, status: transactions.status, amountCents: transactions.amountCents }).from(transactions),
+    db.select({ userId: stripeAccounts.userId, onboardingComplete: stripeAccounts.onboardingComplete }).from(stripeAccounts),
+  ]);
+  const activeMembers = memberRows.filter((member) => !member.disabled);
+  const completedStatuses = ["paid", "payout_pending", "paid_out"];
+  const completedOrders = transactionRows.filter((transaction) => completedStatuses.includes(transaction.status));
+  return {
+    memberCount: activeMembers.length,
+    proMemberCount: activeMembers.filter((member) => member.isPro).length,
+    verifiedMemberCount: identityRows.filter((identity) => identity.verificationStatus === "verified").length,
+    activeListingCount: listingRows.filter((listing) => listing.status === "active").length,
+    draftListingCount: listingRows.filter((listing) => listing.status === "draft").length,
+    completedOrderCount: completedOrders.length,
+    grossVolumeCents: completedOrders.reduce((total, order) => total + order.amountCents, 0),
+    payoutReadySellerCount: accountRows.filter((account) => account.onboardingComplete).length,
+  };
+}
