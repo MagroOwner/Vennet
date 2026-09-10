@@ -6,10 +6,10 @@ export const dynamic = "force-dynamic";
 
 export default async function AdStudioPage() {
   const session = await requireSession("/studio/ads");
-  const ownerEmail = process.env.AD_STUDIO_OWNER_EMAIL?.trim().toLowerCase();
-  const isOwner = Boolean(ownerEmail) && session.email.trim().toLowerCase() === ownerEmail;
 
-  if (!isOwner) notFound();
+  // The recording studio stays private, but no longer relies on a separate
+  // deployment-only email setting that can accidentally lock the owner out.
+  if (session.role !== "admin") notFound();
 
   return <main className="mx-auto max-w-6xl pb-10">
     <AdStudioPlayer />
