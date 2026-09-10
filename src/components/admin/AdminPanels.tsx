@@ -76,15 +76,15 @@ export function AdminPanels({
 
   return (
     <div className="mt-6">
-      <div className="flex gap-2 border-b border-zinc-800">
+      <div className="flex gap-2 border-b border-slate-200">
         {TABS.map((entry) => (
           <button
             key={entry.key}
             onClick={() => setTab(entry.key)}
             className={`px-4 py-2 text-sm ${
               tab === entry.key
-                ? "border-b-2 border-emerald-500 text-emerald-400"
-                : "text-zinc-400 hover:text-zinc-200"
+                ? "border-b-2 border-emerald-500 text-emerald-800"
+                : "text-slate-500 hover:text-slate-900"
             }`}
           >
             {entry.label}
@@ -96,7 +96,7 @@ export function AdminPanels({
 
       {tab === "disputes" && (
         <div className="mt-6 space-y-4">
-          {disputes.length === 0 && <p className="text-zinc-400">No open disputes.</p>}
+          {disputes.length === 0 && <p className="text-slate-600">No open disputes.</p>}
           {disputes.map((dispute) => (
             <DisputeCard
               key={dispute.id}
@@ -113,15 +113,15 @@ export function AdminPanels({
       {tab === "verification" && (
         <div className="mt-6 space-y-4">
           {verificationRequests.length === 0 && (
-            <p className="text-zinc-400">No pending verification requests.</p>
+            <p className="text-slate-600">No pending verification requests.</p>
           )}
           {verificationRequests.map((request) => (
             <div
               key={request.id}
-              className="rounded-lg border border-zinc-800 bg-zinc-900 p-4"
+              className="rounded-xl border border-slate-200 bg-slate-50 p-4"
             >
               <p className="font-medium">{request.fullName}</p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-slate-500">
                 {request.documentType.replace(/_/g, " ")} · user {request.userId}
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -131,7 +131,7 @@ export function AdminPanels({
                     href={`/api/verification/document?path=${encodeURIComponent(path)}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs text-sky-400 hover:underline"
+                    className="text-xs text-emerald-800 hover:underline"
                   >
                     View document
                   </a>
@@ -143,7 +143,7 @@ export function AdminPanels({
                   onClick={() =>
                     run(() => approveVerification({ requestId: request.id, approve: true }))
                   }
-                  className="rounded bg-emerald-600 px-3 py-1 text-sm hover:bg-emerald-500 disabled:opacity-50"
+                  className="rounded-lg bg-emerald-400 px-3 py-2 text-sm font-bold text-emerald-950 hover:bg-emerald-300 disabled:opacity-50"
                 >
                   Approve
                 </button>
@@ -154,7 +154,7 @@ export function AdminPanels({
                       approveVerification({ requestId: request.id, approve: false })
                     )
                   }
-                  className="rounded border border-zinc-700 px-3 py-1 text-sm hover:bg-zinc-800 disabled:opacity-50"
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-50"
                 >
                   Reject
                 </button>
@@ -166,11 +166,11 @@ export function AdminPanels({
 
       {tab === "fraud" && (
         <div className="mt-6 space-y-3">
-          {fraudSignals.length === 0 && <p className="text-zinc-400">No fraud signals.</p>}
+          {fraudSignals.length === 0 && <p className="text-slate-600">No fraud signals.</p>}
           {fraudSignals.map((signal) => (
             <div
               key={signal.id}
-              className="rounded-lg border border-zinc-800 bg-zinc-900 p-4"
+              className="rounded-xl border border-slate-200 bg-slate-50 p-4"
             >
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium capitalize">
@@ -179,15 +179,15 @@ export function AdminPanels({
                 <span
                   className={`rounded px-2 py-0.5 text-xs capitalize ${
                     signal.severity === "high"
-                      ? "bg-red-600/20 text-red-400"
-                      : "bg-amber-600/20 text-amber-400"
+                      ? "bg-red-50 text-red-700"
+                      : "bg-amber-50 text-amber-800"
                   }`}
                 >
                   {signal.severity}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-zinc-400">{signal.details}</p>
-              <p className="mt-1 text-xs text-zinc-500">user {signal.userId}</p>
+              <p className="mt-1 text-sm text-slate-600">{signal.details}</p>
+              <p className="mt-1 text-xs text-slate-500">user {signal.userId}</p>
             </div>
           ))}
         </div>
@@ -222,24 +222,24 @@ function DisputeCard({
   const [resolution, setResolution] = useState("");
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium capitalize">
           {dispute.status.replace(/_/g, " ")}
         </p>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-slate-500">
           {new Date(dispute.createdAt).toLocaleDateString()}
         </p>
       </div>
-      <p className="mt-1 text-sm text-zinc-300">{dispute.reason}</p>
-      <p className="mt-1 text-xs text-zinc-500">
+      <p className="mt-1 text-sm text-slate-700">{dispute.reason}</p>
+      <p className="mt-1 text-xs text-slate-500">
         buyer {dispute.buyerId} · seller {dispute.sellerId}
       </p>
       <div className="mt-3 space-y-2">
         <select
           value={outcome}
           onChange={(e) => setOutcome(e.target.value as DisputeOutcome)}
-          className="w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
         >
           {DISPUTE_OUTCOMES.map((option) => (
             <option key={option} value={option}>
@@ -252,12 +252,12 @@ function DisputeCard({
           placeholder="Resolution note"
           value={resolution}
           onChange={(e) => setResolution(e.target.value)}
-          className="w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
         />
         <button
           disabled={busy}
           onClick={() => onResolve(outcome, resolution)}
-          className="rounded bg-emerald-600 px-3 py-1 text-sm hover:bg-emerald-500 disabled:opacity-50"
+          className="rounded-lg bg-emerald-400 px-3 py-2 text-sm font-bold text-emerald-950 hover:bg-emerald-300 disabled:opacity-50"
         >
           Resolve
         </button>
@@ -282,21 +282,21 @@ function ReputationPanel({
   const [reason, setReason] = useState("");
 
   if (!isAdmin) {
-    return <p className="mt-6 text-zinc-400">Reputation tools require admin access.</p>;
+    return <p className="mt-6 text-slate-600">Reputation tools require admin access.</p>;
   }
 
   return (
-    <div className="mt-6 max-w-md space-y-3 rounded-lg border border-zinc-800 bg-zinc-900 p-4">
+    <div className="mt-6 max-w-md space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
       <input
         placeholder="Target user ID"
         value={targetUserId}
         onChange={(e) => setTargetUserId(e.target.value)}
-        className="w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
+        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
       />
       <button
         disabled={busy || targetUserId === ""}
         onClick={() => onRecalculate(targetUserId)}
-        className="w-full rounded border border-zinc-700 py-2 text-sm hover:bg-zinc-800 disabled:opacity-50"
+        className="w-full rounded-lg border border-slate-300 bg-white py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-50"
       >
         Recalculate from logs
       </button>
@@ -305,18 +305,18 @@ function ReputationPanel({
         placeholder="Delta"
         value={delta}
         onChange={(e) => setDelta(e.target.value)}
-        className="w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
+        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
       />
       <input
         placeholder="Reason"
         value={reason}
         onChange={(e) => setReason(e.target.value)}
-        className="w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
+        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
       />
       <button
         disabled={busy || targetUserId === ""}
         onClick={() => onAdjust(targetUserId, Number(delta), reason)}
-        className="w-full rounded bg-emerald-600 py-2 text-sm hover:bg-emerald-500 disabled:opacity-50"
+        className="w-full rounded-lg bg-emerald-400 py-2 text-sm font-bold text-emerald-950 hover:bg-emerald-300 disabled:opacity-50"
       >
         Apply adjustment
       </button>
