@@ -30,6 +30,6 @@ export async function Navbar() {
       </div>
       {session && <div className="border-t border-slate-100 px-4 py-2 lg:hidden"><SellerSidebar /></div>}
     </header>
-    {session && !welcomeResponse && <WelcomeQuestionnaire />}
+    {session && welcomeResponse === null && <WelcomeQuestionnaire />}
   </>;
 }
