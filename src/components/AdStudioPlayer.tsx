@@ -218,7 +218,7 @@ export function AdStudioPlayer() {
         </aside>
       </div>
 
-      <style jsx>{\`
+      <style jsx>{`
         .ad-studio{overflow:hidden;border:1px solid #dbe8e1;border-radius:30px;background:#fff;box-shadow:0 30px 85px rgba(6,78,59,.13);color:#0f172a}
         .studio-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:27px 31px;border-bottom:1px solid #e5eee9;background:linear-gradient(100deg,#fff 20%,#f0fdf4)}
         .studio-bar p,.story-label{margin:0;color:#047857;font-size:11px;font-weight:950;letter-spacing:.2em}
@@ -266,7 +266,7 @@ export function AdStudioPlayer() {
         .phone:fullscreen{display:grid;place-items:center;width:auto;height:100%;padding:0;border-radius:0;background:#000}.phone:fullscreen .camera-island{display:none}.phone:fullscreen .film{width:min(100vw,56.25vh);height:auto;border-radius:0}.phone:fullscreen .film-copy h2{font-size:clamp(34px,5vh,62px)}.phone:fullscreen .film-copy{right:7%;bottom:7%;left:7%}.phone:fullscreen .film-header{padding:7% 7% 0}
         @keyframes camera-ride{0%{transform:scale(1.12) translate3d(-1.5%,2%,0)}100%{transform:scale(1.03) translate3d(1%,0,0)}}@keyframes opening-ride{0%{transform:scale(1.14) translateY(2%)}100%{transform:scale(1.04) translateY(-1%)}}@keyframes selling-ride{0%{transform:scale(1.14) translateX(-2%)}100%{transform:scale(1.04) translateX(1%)}}@keyframes buying-ride{0%{transform:scale(1.16) translateY(3%)}100%{transform:scale(1.04) translateY(-2%)}}@keyframes end-ride{0%{transform:scale(1.18)}100%{transform:scale(1.04)}}@keyframes scan{0%,15%{transform:translateX(-80%)}70%,100%{transform:translateX(82%)}}@keyframes glint{50%{transform:scale(2.4);opacity:.3}}@keyframes copy-in{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}@keyframes emblem-in{0%{opacity:0;transform:translate(-50%,60px) scale(.63)}36%,84%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:.92;transform:translate(-50%,-4px) scale(.97)}}
         @media(max-width:800px){.studio-bar{align-items:flex-start;flex-direction:column;padding:22px}.studio-main{grid-template-columns:1fr;padding:18px}.film-stage{min-height:auto;padding:25px 12px}.phone{max-width:340px}.film-copy h2{font-size:31px}.story{padding:4px 2px}}@media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;animation-iteration-count:1!important}}
-      \`}</style>
+      `}</style>
     </section>
   );
 }
