@@ -16,9 +16,11 @@ const memberLinks = [
   ["Sell on Vennet", "/dashboard/seller"],
 ];
 
-export function MobileNav({ signedIn }: { signedIn: boolean }) {
+const adminLinks = [["Admin command center", "/admin"]];
+
+export function MobileNav({ signedIn, isAdmin = false }: { signedIn: boolean; isAdmin?: boolean }) {
   const [open, setOpen] = useState(false);
-  const links = signedIn ? [...visitorLinks.slice(0, 3), ...memberLinks, visitorLinks[3]] : visitorLinks;
+  const links = signedIn ? [...visitorLinks.slice(0, 3), ...memberLinks, ...(isAdmin ? adminLinks : []), visitorLinks[3]] : visitorLinks;
 
   return <>
     <button type="button" aria-label="Open navigation menu" aria-expanded={open} onClick={() => setOpen(true)} className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 xl:hidden">
